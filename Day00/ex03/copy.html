@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Compétences</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .columns {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .column {
+            width: 48%;
+        }
+
+        .column li {
+            width: 100%;
+            float: none;
+            margin-bottom: 2em;
+            list-style: none;
+            position: relative;
+        }
+
+        .column li:last-child {
+            margin-bottom: 0;
+        }
+
+        p[data-value]:after {
+            content: attr(data-value) '%';
+            position: absolute;
+            left: 0;
+            transform: translateX(calc(var(--value) * 1%));
+        }
+    </style>
+</head>
+<body>
+
+<div class="columns">
+
+    <!-- Colonne Frontend -->
+    <div class="column">
+        <h2>Frontend</h2>
+        <ul>
+            <li>
+                <p class="html5" data-value="90" style="--value:90">HTML5</p>
+                <progress class="html5" value="90" max="100"></progress>
+            </li>
+            <li>
+                <p class="css3" data-value="80" style="--value:80">CSS3</p>
+                <progress class="css3" value="80" max="100"></progress>
+            </li>
+            <li>
+                <p class="jquery" data-value="50" style="--value:50">jQuery</p>
+                <progress class="jquery" value="50" max="100"></progress>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Colonne Backend -->
+    <div class="column">
+        <h2>Backend</h2>
+        <ul>
+            <li>
+                <p class="python" data-value="70" style="--value:70">Python</p>
+                <progress class="python" value="70" max="100"></progress>
+            </li>
+            <li>
+                <p class="php" data-value="60" style="--value:60">PHP</p>
+                <progress class="php" value="60" max="100"></progress>
+            </li>
+            <li>
+                <p class="node-js" data-value="40" style="--value:40">Node.js</p>
+                <progress class="node-js" value="40" max="100"></progress>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>
