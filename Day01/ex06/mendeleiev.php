@@ -27,11 +27,11 @@ function empty_cell($num){
 
 function getcolor($num){
     if($num == 0 || ($num > 30 && $num < 34) || ($num > 49 && $num < 52) || ($num == 69))
-        return("green");
+        return("#3258a8");
     if($num == 18 || $num == 36 || $num == 54 || $num == 72 || $num == 90 || $num == 108)
-        return("red");
+        return("#349eeb");
     if($num == 19 || $num == 37 || $num == 55 || $num == 73 || $num == 91 || $num == 109)
-        return("#fcefc0");
+        return("#a83e32");
     if($num == 17 || $num == 35 || $num == 53 || $num == 71 || $num == 89 || $num == 107)
         return("#c0f3fc");
     if(($num > 55 && $num < 65) || ($num > 73 && $num < 83) || ($num > 92 && $num < 101) || ($num > 110 && $num < 116) || $num == 119)
