@@ -1,0 +1,15 @@
+index:
+  path: /e01
+  controller: App\Controller\MultiplePagesController::index
+
+chat:
+  path: /e01/chat
+  controller: App\Controller\MultiplePagesController::chat
+
+lama:
+  path: /e01/lama
+  controller: App\Controller\MultiplePagesController::lama
+
+canard:
+  path: /e01/canard
+  controller: App\Controller\MultiplePagesController::canard

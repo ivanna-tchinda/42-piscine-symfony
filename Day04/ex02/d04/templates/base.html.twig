@@ -11,6 +11,13 @@
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        {% block body %}
+
+	{{ form(form) }}
+
+	<p>Last message: {{message}}</p>
+	{% if timestamp %} {{'now'|date('d-m-Y H:m:s')}} {% endif %}
+	
+	{% endblock %}
     </body>
 </html>

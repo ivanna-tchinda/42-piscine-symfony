@@ -1,0 +1,3 @@
+index:
+  path: /e02
+  controller: App\Controller\FormController::index
