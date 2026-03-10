@@ -15,9 +15,8 @@
 
 	{{ form(form) }}
 
-	<p>Last message: {{message}}</p>
-	{% if timestamp %} {{'now'|date('d-m-Y H:m:s')}} {% endif %}
-	
+	<p>Last message: {{message}}
+	{% if isTimestamp %} {{date().timestamp}} {% endif %}</p>
 	{% endblock %}
     </body>
 </html>

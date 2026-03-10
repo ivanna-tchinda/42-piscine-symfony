@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Controller;
 
 use App\Entity\Message;
@@ -17,11 +18,10 @@ use Symfony\Component\Filesystem\Path;
 
 class FormController extends AbstractController
 {
-	#[Route('/e02/', name: 'index')]
-	public function new(Request $request): Response
+	#[Route('/e02/{message}/{isTimestamp}', name: 'index')]
+	public function new(Request $request, string $message = null, bool $isTimestamp = false): Response
 	{
 		$messageEntity = new Message();
-
 		$form = $this->createFormBuilder($messageEntity)
             		->add('message', TextType::class)
 			->add('isTimestamp', ChoiceType::class, [
@@ -35,7 +35,9 @@ class FormController extends AbstractController
 		$form->handleRequest($request);
         	if ($form->isSubmitted() && $form->isValid()) {
             		$messageEntity = $form->getData();
-			
+			$message = $messageEntity->getMessage();
+			$isTimestamp = $messageEntity->getIsTimestamp() ? 1 : 0;
+
 			$filesystem = new Filesystem();
 			$rootPath = '../';
 			$filename = $rootPath . $this->getParameter('filename');
@@ -43,25 +45,22 @@ class FormController extends AbstractController
 				if($filesystem->exists($filename) == false){
 					$filesystem->touch($filename);
 				}
-				$filesystem->appendToFile($filename, "\n" . $messageEntity->getMessage() . "\n");
+				$filesystem->appendToFile($filename, $messageEntity->getMessage());
 				if($messageEntity->getIsTimestamp())
 				{
-					$filesystem->appendToFile($filename, new \DateTime()->format('d-m-Y')."\n");
+					$filesystem->appendToFile($filename, " " .  time());
 				}
+			$filesystem->appendToFile($filename, "\n");
 			} catch (IOExceptionInterface $exception) {
     				echo "An error occurred while creating your directory at ".$exception->getPath();
 			}
 			
-			return $this->render('base.html.twig', [
-				'form' => $form,
-				'message' => $messageEntity->getMessage(),
-				'timestamp' => $messageEntity->getIsTimestamp()
-			]);
+			return $this->redirectToRoute('index', ['message' => $messageEntity->getMessage(), 'isTimestamp' => $isTimestamp]);
         	}
 		return $this->render('base.html.twig', [
 			'form' => $form,
-			'message' => null,
-			'timestamp' => false
+			'message' => $message,
+			'isTimestamp' => $isTimestamp
 		]);
 	}
 }

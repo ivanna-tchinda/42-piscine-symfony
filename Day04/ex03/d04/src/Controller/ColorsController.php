@@ -12,10 +12,10 @@ class ColorsController extends AbstractController
 	public function index(): Response
 	{
 		$color_titles = array(
-			'black' => array('10','10','10'),
-			'red' => array('10','0','0'),
-			'blue' => array('0','0','10'),
-			'green' => array('0','10','0')
+			'black' => array('20','20','20'),
+			'red' => array('20','0','0'),
+			'blue' => array('0','0','20'),
+			'green' => array('0','20','0')
 		);
 		$nb_of_colors = $this->getParameter('e03.number_of_colors');
 		return $this->render('base.html.twig',[

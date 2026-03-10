@@ -13,18 +13,18 @@
     <body>
         {% block body %}
 	
-	<table style="width:80px; height:40px; border-collapse: collapse; border-color:black; border-width:1px;">
+	<table style="border-collapse: collapse; border-color:black; border-width:1px;">
 		<thead>
 		<tr>
 			{% for key,value in color_titles %}
-			<th style="border-style:solid; border-collapse: collapse;">{{key}}</th>
+			<th style="border-style:solid; border-collapse: collapse; width:80px;height:40px;">{{key}}</th>
 			{% endfor %}
 		</tr>
 		</thead>
 		{% for i in 1..nb_of_colors %}
 		<tr>
 			{% for key,value in color_titles %}
-			<td style='background-color:rgba({{value[0] * i}},{{value[1] * i}},{{value[2] * i}});border-style:solid; border-collapse: collapse;'>{{key}}</td>
+			<td style='background-color:rgba({{value[0] * i}}, {{value[1] * i}}, {{value[2] * i}});border-style:solid; border-collapse: collapse; width:80px; height: 40px;'>{{nb_of_colors}}</td>
 			{% endfor %}
 		</tr>
 		{% endfor %}

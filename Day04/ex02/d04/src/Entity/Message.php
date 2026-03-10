@@ -2,9 +2,14 @@
 
 namespace App\Entity;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 class Message
 {
+	#[Assert\NotBlank]
+	#[Assert\Type(\String::class)]
 	protected string $message;
+
 	protected bool $isTimestamp;
 
 	public function getMessage(): string
