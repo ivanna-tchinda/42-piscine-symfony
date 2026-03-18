@@ -1,4 +1,0 @@
-username:ittt
-name:ivanna
-age:30
-email:mail2

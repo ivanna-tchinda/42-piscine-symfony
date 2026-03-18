@@ -1,8 +1,0 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
-ex14_bundle:
-    resource: '../src/ex14/Controller/'
-    type: annotation

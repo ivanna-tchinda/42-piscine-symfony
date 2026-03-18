@@ -1,9 +1,0 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
-    
-ex05_bundle:
-    resource: '../src/ex05/Controller/'
-    type: annotation
