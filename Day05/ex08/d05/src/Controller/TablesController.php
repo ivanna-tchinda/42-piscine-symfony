@@ -219,7 +219,7 @@ final class TablesController extends AbstractController
 			return new Response("Cannont create table persons if table addresses is not created, go to route /show_table/addresses");
 		$sql = "CREATE TABLE persons(
 			person_id int AUTO_INCREMENT PRIMARY KEY,
-			address_id int UNIQUE,
+			address_id int,
 			username varchar(255) UNIQUE,
 			name varchar(255),
 			email varchar(255) UNIQUE,

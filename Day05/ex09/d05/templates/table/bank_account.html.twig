@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+<style>
+table, th, td, caption {
+  border: 1px solid black;
+}
+</style>
+
+    </head>
+    <body>
+
+<table>
+<caption>All persons</caption>
+<thead>
+<tr>
+<th>Id</th>
+<th>Username</th>
+<th>Name</th>
+<th>Email</th>
+<th>Enable</th>
+<th>Birthdate</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+{% for user in persons %}
+<tr>
+<td>{{user.id}}</td>
+<td>{{user.username}}</td>
+<td>{{user.name}}</td>
+<td>{{user.email}}</td>
+<td>{{user.enable == 1 ? 'Yes' : 'No'}}</td>
+<td>{{user.birthdate|date("m/d/Y")}}</td>
+<td><a href="/delete/{{user.id}}">Delete</a>/<a href="/edit/{{user.id}}">Update</a></td>
+</tr>
+{% endfor %}	
+</tbody>
+</table>
+
+<a href="/person">Back to form</a>
+
+
+</body>
+</html>
