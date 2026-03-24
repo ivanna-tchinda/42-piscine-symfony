@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Table persons{% endblock %}
+
+{% block body %}
+<style>
+table, th, td, caption {
+  border: 1px solid black;
+}
+
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+
+
+<table>
+<caption>All persons</caption>
+<thead>
+<tr>
+{% for column in columns_name %}
+	<td>{{column.COLUMN_NAME}}</td>
+{% endfor %}
+<th><a href="/add_column">Add column</a></th>
+</tr>
+</thead>
+<tbody>
+{% for person in all_persons %}
+<tr>
+<td>{{person.person_id}}</td>
+<td>{{person.username}}</td>
+<td>{{person.name}}</td>
+<td>{{person.email}}</td>
+<td>{{person.enable == 1 ? 'Yes' : 'No'}}</td>
+<td>{{person.birthdate|date("m/d/Y")}}</td>
+</tr>
+{% endfor %}	
+</tbody>
+</table>
+
+</div>
+
+{% endblock %}
