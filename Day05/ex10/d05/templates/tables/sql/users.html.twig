@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Table users SQL table{% endblock %}
+
+{% block body %}
+<style>
+table, th, td, caption {
+  border: 1px solid black;
+}
+
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+
+
+<table>
+<caption>All users from SQL table</caption>
+<thead>
+<tr>
+{% for column in columns_name %}
+	<td>{{column.COLUMN_NAME}}</td>
+{% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for user in all_users %}
+<tr>
+<td>{{user.id}}</td>
+<td>{{user.username}}</td>
+<td>{{user.name}}</td>
+</tr>
+{% endfor %}	
+</tbody>
+</table>
+</div>
+
+{% endblock %}
