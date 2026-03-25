@@ -15,30 +15,22 @@ table, th, td, caption {
 <thead>
 <tr>
 <th>Id</th>
-<th>Username</th>
-<th>Name</th>
-<th>Email</th>
-<th>Enable</th>
-<th>Birthdate</th>
-<th>Action</th>
+<th>Account number</th>
+<th>Belongs to</th>
 </tr>
 </thead>
 <tbody>
-{% for user in persons %}
+{% for account in bank_accounts %}
 <tr>
-<td>{{user.id}}</td>
-<td>{{user.username}}</td>
-<td>{{user.name}}</td>
-<td>{{user.email}}</td>
-<td>{{user.enable == 1 ? 'Yes' : 'No'}}</td>
-<td>{{user.birthdate|date("m/d/Y")}}</td>
-<td><a href="/delete/{{user.id}}">Delete</a>/<a href="/edit/{{user.id}}">Update</a></td>
+<td>{{account.id}}</td>
+<td>{{account.number}}</td>
+<td>{{account.person.name}}</td>
 </tr>
 {% endfor %}	
 </tbody>
 </table>
 
-<a href="/person">Back to form</a>
+<a href="/bank_account">Back to form</a>
 
 
 </body>

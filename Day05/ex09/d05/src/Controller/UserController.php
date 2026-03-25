@@ -16,7 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class UserController extends AbstractController
 {
-	#[Route('/show_bankaccount', name: 'show_bankaccount')]
+	#[Route('/show_bank_account', name: 'show_bankaccount')]
 	public function show_bankaccount(EntityManagerInterface $entityManager): Response
 	{
 
@@ -84,7 +84,7 @@ final class UserController extends AbstractController
 		return new Response("Person with id ".$id." is not in the table");
 	}
 
-	#[Route('/show_persons', name: 'show_persons')]
+	#[Route('/show_person', name: 'show_persons')]
 	public function show_persons(EntityManagerInterface $entityManager): Response
 	{
 
@@ -108,14 +108,14 @@ final class UserController extends AbstractController
 		$form->handleRequest($request);
 		if ($form->isSubmitted() && $form->isValid()) {
 			$bank_account = $form->getData();
-			$bank_account_exists = $entityManager->getRepository(BankAccount::class)->findByAccountNumber($person->getAccountNumber());
+			$bank_account_exists = $entityManager->getRepository(BankAccount::class)->findByNumber($bank_account->getNumber());
 			if(!$bank_account_exists){
 
 				$entityManager->persist($bank_account);
 				$entityManager->flush();
-				return new Response("Bank account ". $bank_account->getAccountNumber()." has been created");
+				return new Response("Bank account ". $bank_account->getNumber()." has been created");
 			}
-			return new Response("Bank account ".$bank_account->getAccountNumber()." already exists");
+			return new Response("Bank account ".$bank_account->getNumber()." already exists");
 
 
 		}

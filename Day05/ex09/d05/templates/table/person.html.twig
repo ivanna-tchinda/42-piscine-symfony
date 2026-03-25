@@ -20,6 +20,8 @@ table, th, td, caption {
 <th>Email</th>
 <th>Enable</th>
 <th>Birthdate</th>
+<th>Address</th>
+<th>Account number</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -32,6 +34,8 @@ table, th, td, caption {
 <td>{{user.email}}</td>
 <td>{{user.enable == 1 ? 'Yes' : 'No'}}</td>
 <td>{{user.birthdate|date("m/d/Y")}}</td>
+<td>{{user.address.address}}</td>
+<td>{{user.bankAccount.number}}</td>
 <td><a href="/delete/{{user.id}}">Delete</a>/<a href="/edit/{{user.id}}">Update</a></td>
 </tr>
 {% endfor %}	
