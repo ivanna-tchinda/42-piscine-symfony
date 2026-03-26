@@ -9,6 +9,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\DBAL\DriverManager;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
@@ -24,71 +26,23 @@ final class TablesController extends AbstractController
 		return $conn;
 	}
 
-	#[Route('/add_column', name: 'add_column')]
-	public function add_column(Request $request): Response
-	{
-		$column_data = array();
-		$form = $this->createFormBuilder()
-	       ->add('column_name', TextType::class)
-	       ->add('data_type', TextType::class)
-	       ->add('save', SubmitType::class, ['label' => 'Add column'])
-	       ->getForm();
-
-		$form->handleRequest($request);
-		if ($form->isSubmitted() && $form->isValid()) {
-			$column_data = $form->getData();
-			return $this->redirectToRoute('add_column_data', [
-				'column_name' => $column_data['column_name'],
-				'data_type' => $column_data['data_type']
-			]);
-		}	
-		return $this->render('tables/persons/new-column-form.html.twig', [
-			'form' => $form
-		]);
-	}
-
-	#[Route('/add_column/{column_name}/{data_type}', name: 'add_column_data')]
-	public function add_column_data(string $column_name, string $data_type): Response
-	{
-		$sql = "ALTER TABLE persons ADD $column_name $data_type";
-
-		$conn = $this->db_connection();
-		$message = "Column successfully added in table persons";
-		$schemaManager = $conn->createSchemaManager();
-		$result = null;
-		try {
-			$stmt = $conn->executeQuery($sql);
-		} catch (\Doctrine\DBAL\Exception\DriverException $e)
-		{
-			return new Response("Failed creating a column");
-		}
-		return $this->render('tables/message.html.twig', [
-			'message' => $message
-		]);
-
-
-	}
 
 	public function get_columns(string $table_name): array
 	{
-		$sql = " SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'$table_name'
-";
+		$sql = "DESCRIBE $table_name";
 
 		$conn = $this->db_connection();
-
 		$schemaManager = $conn->createSchemaManager();
-		$result = null;
-		if($schemaManager->tableExists('persons')){
+		$result = array();
+		if($schemaManager->tableExists($table_name)){
 			$stmt = $conn->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
 		}
-
 		return $result;
-
 	}
 
 	#[Route('/show_table/persons', name: 'table_persons')]
-	public function table_persons(): Response
+	public function table_persons(Request $request): Response
 	{
 		$sql = "SELECT * FROM persons";
 
@@ -103,13 +57,12 @@ final class TablesController extends AbstractController
 			       'No' => false,
 		       ],])
 		       ->add('birthdate', DateType::class)
-		       ->add('address', TextType::class)
-		       ->add('save', SubmitType::class, ['label' => 'Create User'])
+		       ->add('save', SubmitType::class, ['label' => 'Create Person'])
 		       ->getForm();
 		$form->handleRequest($request);
 		if ($form->isSubmitted() && $form->isValid()) {
-			$user = $form->getData();
-			$message = $this->create_user($user);
+			$person = $form->getData();
+			$message = $this->create_user($person);
 		}
 
 		$conn = $this->db_connection();
@@ -117,10 +70,10 @@ final class TablesController extends AbstractController
 		$schemaManager = $conn->createSchemaManager();
 		$stmt = $conn->executeQuery($sql);
 		$result =  $stmt->fetchAllAssociative();
-
 		return $this->render('tables/persons/index.html.twig', [
 			'columns_name' => $columns_name,
 			'all_persons' => $result,
+			'form' => $form
 		]);
 	}
 
@@ -133,11 +86,39 @@ final class TablesController extends AbstractController
 		if($schemaManager->tableExists('users')){
 			$stmt = $conn->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
+
 			$userExists = $result ? true : false;
 		}
 
 
 		return $userExists;	
+	}
+
+	public function create_user(array $user): string
+	{
+		$username = $user['username'];
+		$name = $user['name'];
+		$email = $user['email'];
+		$enable = $user['enable'] == 1 ? '1' : '0';
+		$birthdate = $user['birthdate']->format('Y-m-d');
+
+		$conn = $this->db_connection();
+		$schemaManager = $conn->createSchemaManager();
+		if(!$schemaManager->tableExists('persons')){
+			return "Table has not been created";
+		}
+		if($this->check_user($user)){
+			return "Person already exists";
+		}
+		$sql = "INSERT INTO persons(username, name, email, enable, birthdate) VALUES ('".$username."','".
+			$name."','".
+			$email."','".
+			$enable."','".
+			$birthdate.
+			"');";
+		$conn->executeQuery($sql);
+		return "Person ".$username. " has been created!";;
+
 	}
 
 	public function create_table_addresses(): string
@@ -235,8 +216,7 @@ final class TablesController extends AbstractController
 			email varchar(255) UNIQUE,
 			enable BOOL,
 			birthdate DATETIME,
-			FOREIGN KEY (address_id) REFERENCES addresses(address_id)
-);";
+			FOREIGN KEY (address_id) REFERENCES addresses(address_id));";
 		$message = "Table persons already exists";
 		if(!$schemaManager->tableExists('persons')){
 			$conn->executeQuery($sql);

@@ -20,24 +20,25 @@ table, th, td, caption {
 <thead>
 <tr>
 {% for column in columns_name %}
-	<td>{{column.COLUMN_NAME}}</td>
+	<td>{{column.Field}}</td>
 {% endfor %}
-<th><a href="/add_column">Add column</a></th>
 </tr>
 </thead>
 <tbody>
 {% for person in all_persons %}
 <tr>
-<td>{{person.person_id}}</td>
-<td>{{person.username}}</td>
-<td>{{person.name}}</td>
-<td>{{person.email}}</td>
-<td>{{person.enable == 1 ? 'Yes' : 'No'}}</td>
-<td>{{person.birthdate|date("m/d/Y")}}</td>
+	<td>{{person.person_id}}</td>
+	<td>{{person.username}}</td>
+	<td>{{person.name}}</td>
+	<td>{{person.email}}</td>
+	<td>{{person.enable == 1 ? 'Yes' : 'No'}}</td>
+	<td>{{person.birthdate|date("m/d/Y")}}</td>
 </tr>
 {% endfor %}	
 </tbody>
 </table>
+
+{{form(form)}}
 </div>
 
 {% endblock %}
