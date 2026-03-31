@@ -44,7 +44,14 @@ final class TablesController extends AbstractController
 	#[Route('/show_table/persons', name: 'table_persons')]
 	public function table_persons(Request $request): Response
 	{
-		$sql = "SELECT * FROM persons";
+		$conn = $this->db_connection();
+		$schemaManager = $conn->createSchemaManager();
+		if($schemaManager->tableExists('addresses')){
+			$sql = "SELECT * FROM addresses";
+			$stmt = $conn->executeQuery($sql);
+			$result_addresses =  $stmt->fetchAllAssociative();
+		}
+		$address_list = $result_addresses;
 
 		$person = array();
 		$form = $this->createFormBuilder()
@@ -56,6 +63,7 @@ final class TablesController extends AbstractController
 			       'Yes' => true,
 			       'No' => false,
 		       ],])
+		       ->add('address', ChoiceType::class, ['choices' => $address_list])
 		       ->add('birthdate', DateType::class)
 		       ->add('save', SubmitType::class, ['label' => 'Create Person'])
 		       ->getForm();
@@ -65,11 +73,12 @@ final class TablesController extends AbstractController
 			$message = $this->create_user($person);
 		}
 
-		$conn = $this->db_connection();
 		$columns_name = $this->get_columns("persons");
+		$sql = "SELECT * FROM persons";
 		$schemaManager = $conn->createSchemaManager();
 		$stmt = $conn->executeQuery($sql);
 		$result =  $stmt->fetchAllAssociative();
+		var_dump($result_addresses);
 		return $this->render('tables/persons/index.html.twig', [
 			'columns_name' => $columns_name,
 			'all_persons' => $result,
@@ -93,6 +102,24 @@ final class TablesController extends AbstractController
 
 		return $userExists;	
 	}
+
+	public function check_address(array $address): bool
+	{
+		$addressExists = false;
+		$conn = $this->db_connection();
+		$schemaManager = $conn->createSchemaManager();
+		$sql = "SELECT * FROM addresses WHERE address='".$address['address']."';";
+		if($schemaManager->tableExists('addresses')){
+			$stmt = $conn->executeQuery($sql);
+			$result =  $stmt->fetchAllAssociative();
+
+			$addressExists = $result ? true : false;
+		}
+
+
+		return $addressExists;
+	}
+
 
 	public function create_user(array $user): string
 	{
@@ -121,6 +148,25 @@ final class TablesController extends AbstractController
 
 	}
 
+	public function create_address(array $address): string
+	{
+		$address_name = $address['address'];
+
+		$conn = $this->db_connection();
+		$schemaManager = $conn->createSchemaManager();
+		if(!$schemaManager->tableExists('addresses')){
+			return "Table has not been created";
+		}
+		if($this->check_address($address)){
+			return "Address already exists";
+		}
+		$sql = "INSERT INTO addresses(address) VALUES ('".$address_name."');";
+		$conn->executeQuery($sql);
+		return "Address ".$address_name. " has been created!";;
+
+	}
+
+
 	public function create_table_addresses(): string
 	{
 		$conn = $this->db_connection();
@@ -129,31 +175,43 @@ final class TablesController extends AbstractController
 			address_id int AUTO_INCREMENT PRIMARY KEY,
 			address varchar(255) UNIQUE
 );";
-		if(!$schemaManager->tableExists('bank_accounts')){
+		if(!$schemaManager->tableExists('addresses')){
 			$conn->executeQuery($sql);
-			return "Successfully created table bank_accounts!";
+			return "Successfully created table addresses!";
 		}
-		return "Failed creating table bank_accounts";
+		return "Failed creating table addresses";
 
 	}
 
 	#[Route('/show_table/addresses')]
-	public function table_addresses(): Response
+	public function table_addresses(Request $request): Response
 	{
 		$conn = $this->db_connection();
 		$schemaManager = $conn->createSchemaManager();
+		$message = '';
 		if($schemaManager->tableExists('addresses')){
 			$sql = "SELECT * FROM addresses";
 			$stmt = $conn->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
 			$columns_name = $this->get_columns("addresses");
+			$form = $this->createFormBuilder()
+		->add('address', TextType::class)
+		->add('save', SubmitType::class, ['label' => 'Create Address'])
+		->getForm();
+			$form->handleRequest($request);
+			if ($form->isSubmitted() && $form->isValid()) {
+				$address = $form->getData();
+				$message = $this->create_address($address);
+			}
 		}
 		else
 			return new Response($this->create_table_addresses());
 		return $this->render('show_all/index.html.twig', [
 			'columns_name' => $columns_name,
 			'result' => $result,
-			'table_name' => 'Addresses'
+			'table_name' => 'Addresses',
+			'form' => $form,
+			'message' => $message
 		]);
 
 	}
