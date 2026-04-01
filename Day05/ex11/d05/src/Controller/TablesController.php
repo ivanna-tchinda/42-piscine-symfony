@@ -49,9 +49,8 @@ final class TablesController extends AbstractController
 		if($schemaManager->tableExists('addresses')){
 			$sql = "SELECT * FROM addresses";
 			$stmt = $conn->executeQuery($sql);
-			$result_addresses =  $stmt->fetchAllAssociative();
+			$result_addresses =  $stmt->fetchAllKeyValue();
 		}
-		$address_list = $result_addresses;
 
 		$person = array();
 		$form = $this->createFormBuilder()
@@ -63,7 +62,7 @@ final class TablesController extends AbstractController
 			       'Yes' => true,
 			       'No' => false,
 		       ],])
-		       ->add('address', ChoiceType::class, ['choices' => $address_list])
+		       ->add('address', ChoiceType::class, ['choices' => $result_addresses])
 		       ->add('birthdate', DateType::class)
 		       ->add('save', SubmitType::class, ['label' => 'Create Person'])
 		       ->getForm();
