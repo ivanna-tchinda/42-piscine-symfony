@@ -38,7 +38,7 @@ require_once __DIR__.\DIRECTORY_SEPARATOR.'Framework'.\DIRECTORY_SEPARATOR.'Rate
 require_once __DIR__.\DIRECTORY_SEPARATOR.'Framework'.\DIRECTORY_SEPARATOR.'UidConfig.php';
 require_once __DIR__.\DIRECTORY_SEPARATOR.'Framework'.\DIRECTORY_SEPARATOR.'HtmlSanitizerConfig.php';
 require_once __DIR__.\DIRECTORY_SEPARATOR.'Framework'.\DIRECTORY_SEPARATOR.'WebhookConfig.php';
-require_once __DIR__.\DIRECTORY_SEPARATOR.'Framework'.\DIRECTORY_SEPARATOR.'RemoteeventConfig.php';
+require_once __DIR__.\DIRECTORY_SEPARATOR.'Framework'.\DIRECTORY_SEPARATOR.'RemoteEventConfig.php';
 require_once __DIR__.\DIRECTORY_SEPARATOR.'Framework'.\DIRECTORY_SEPARATOR.'JsonStreamerConfig.php';
 
 use Symfony\Component\Config\Loader\ParamConfigurator;
@@ -101,7 +101,7 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
     private $uid;
     private $htmlSanitizer;
     private $webhook;
-    private $remoteevent;
+    private $remoteEvent;
     private $jsonStreamer;
     private $_usedProperties = [];
     private $_hasDeprecatedCalls = false;
@@ -1368,28 +1368,28 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
      * @param TValue $value
      * RemoteEvent configuration
      * @default {"enabled":false}
-     * @return \Symfony\Config\Framework\RemoteeventConfig|$this
-     * @psalm-return (TValue is array ? \Symfony\Config\Framework\RemoteeventConfig : static)
+     * @return \Symfony\Config\Framework\RemoteEventConfig|$this
+     * @psalm-return (TValue is array ? \Symfony\Config\Framework\RemoteEventConfig : static)
      * @deprecated since Symfony 7.4
      */
-    public function remoteevent(array|bool $value = []): \Symfony\Config\Framework\RemoteeventConfig|static
+    public function remoteEvent(array|bool $value = []): \Symfony\Config\Framework\RemoteEventConfig|static
     {
         $this->_hasDeprecatedCalls = true;
         if (!\is_array($value)) {
-            $this->_usedProperties['remoteevent'] = true;
-            $this->remoteevent = $value;
+            $this->_usedProperties['remoteEvent'] = true;
+            $this->remoteEvent = $value;
 
             return $this;
         }
 
-        if (!$this->remoteevent instanceof \Symfony\Config\Framework\RemoteeventConfig) {
-            $this->_usedProperties['remoteevent'] = true;
-            $this->remoteevent = new \Symfony\Config\Framework\RemoteeventConfig($value);
+        if (!$this->remoteEvent instanceof \Symfony\Config\Framework\RemoteEventConfig) {
+            $this->_usedProperties['remoteEvent'] = true;
+            $this->remoteEvent = new \Symfony\Config\Framework\RemoteEventConfig($value);
         } elseif (0 < \func_num_args()) {
-            throw new InvalidConfigurationException('The node created by "remoteevent()" has already been initialized. You cannot pass values the second time you call remoteevent().');
+            throw new InvalidConfigurationException('The node created by "remoteEvent()" has already been initialized. You cannot pass values the second time you call remoteEvent().');
         }
 
-        return $this->remoteevent;
+        return $this->remoteEvent;
     }
 
     /**
@@ -1740,10 +1740,10 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
             unset($config['webhook']);
         }
 
-        if (array_key_exists('remote-event', $config)) {
-            $this->_usedProperties['remoteevent'] = true;
-            $this->remoteevent = \is_array($config['remote-event']) ? new \Symfony\Config\Framework\RemoteeventConfig($config['remote-event']) : $config['remote-event'];
-            unset($config['remote-event']);
+        if (array_key_exists('remote_event', $config)) {
+            $this->_usedProperties['remoteEvent'] = true;
+            $this->remoteEvent = \is_array($config['remote_event']) ? new \Symfony\Config\Framework\RemoteEventConfig($config['remote_event']) : $config['remote_event'];
+            unset($config['remote_event']);
         }
 
         if (array_key_exists('json_streamer', $config)) {
@@ -1916,8 +1916,8 @@ class FrameworkConfig implements \Symfony\Component\Config\Builder\ConfigBuilder
         if (isset($this->_usedProperties['webhook'])) {
             $output['webhook'] = $this->webhook instanceof \Symfony\Config\Framework\WebhookConfig ? $this->webhook->toArray() : $this->webhook;
         }
-        if (isset($this->_usedProperties['remoteevent'])) {
-            $output['remote-event'] = $this->remoteevent instanceof \Symfony\Config\Framework\RemoteeventConfig ? $this->remoteevent->toArray() : $this->remoteevent;
+        if (isset($this->_usedProperties['remoteEvent'])) {
+            $output['remote_event'] = $this->remoteEvent instanceof \Symfony\Config\Framework\RemoteEventConfig ? $this->remoteEvent->toArray() : $this->remoteEvent;
         }
         if (isset($this->_usedProperties['jsonStreamer'])) {
             $output['json_streamer'] = $this->jsonStreamer instanceof \Symfony\Config\Framework\JsonStreamerConfig ? $this->jsonStreamer->toArray() : $this->jsonStreamer;

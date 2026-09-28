@@ -9,38 +9,30 @@ use Doctrine\DBAL\DriverManager;
 
 class UserController extends AbstractController
 {
-	#[Route('/e00/create_table', name: 'table')]
-	public function create_table(): Response
+	#[Route('/ex00/create_table', name: 'table')]
+	public function create_table(Connection $connection): Response
 	{
-		$connectionParams = [
-			'dbname' => 'ex00',
-			'user' => 'root',
-			'password' => '1234',
-			'host' => 'localhost',
-			'driver' => 'pdo_mysql',
-		];
-		$conn = DriverManager::getConnection($connectionParams);
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		$sql = "CREATE TABLE users(
 			id int PRIMARY KEY,
-			username varchar(255) UNIQUE,
-			name varchar(255),
-			email varchar(255) UNIQUE,
+			username TEXT UNIQUE,
+			name TEXT,
+			email TEXT UNIQUE,
 			enable BOOL,
-			birthdate DATETIME UNIQUE,
-			address LONGTEXT
+			birthdate TIMESTAMP,
+			address varchar(255)
 );";
 		if(!$schemaManager->tableExists('users')){
-			$conn->executeQuery($sql);
+			$connection->executeQuery($sql);
 			return new Response("Table users created!");	
 		}
 		return new Response("Table users already exists");
 	}
 
-	#[Route('/e00', name: 'index')]
+	#[Route('/ex00', name: 'index')]
 	public function index(Connection $connection): Response
 	{
-		$message = '';
+		$message = 'Create table';
 		return $this->render('base.html.twig', [
 			'message' => $message
 		]);

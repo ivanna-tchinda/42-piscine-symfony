@@ -4,5 +4,6 @@
 
 return [
     '_preview_error' => [['code', '_format'], ['_controller' => 'error_controller::preview', '_format' => 'html'], ['code' => '\\d+'], [['variable', '.', '[^/]++', '_format', true], ['variable', '/', '\\d+', 'code', true], ['text', '/_error']], [], [], []],
-    'index' => [[], ['_controller' => 'App\\Controller\\UserController::index'], [], [['text', '/e00']], [], [], []],
+    'table' => [[], ['_controller' => 'App\\Controller\\UserController::create_table'], [], [['text', '/ex00/table']], [], [], []],
+    'index' => [[], ['_controller' => 'App\\Controller\\UserController::index'], [], [['text', '/ex00']], [], [], []],
 ];

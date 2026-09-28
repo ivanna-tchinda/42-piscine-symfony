@@ -11,9 +11,9 @@ controllers:
   resource: routing.controllers
 
 table:
-  path: e00/table
+  path: ex00/table
   controller: App\Controller\UserController::create_table
 
 index:
-  path: e00
+  path: ex00
   controller: App\Controller\UserController::index

@@ -28,6 +28,7 @@ class RoutingConfig
     }
 
     /**
+     * The secret used to verify incoming request signatures. It must be set in production: with an empty value, requests from any sender are accepted.
      * @param ParamConfigurator|mixed $value
      * @return $this
      */
