@@ -16,13 +16,13 @@ class User
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
     private ?string $username = null;
 
-    #[ORM\Column(length:255)]
+    #[ORM\Column(type: Types::TEXT)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: Types::TEXT)]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -31,7 +31,7 @@ class User
     #[ORM\Column]
     private ?\DateTime $birthdate = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(length: 255)]
     private ?string $address = null;
 
     public function getId(): ?int
