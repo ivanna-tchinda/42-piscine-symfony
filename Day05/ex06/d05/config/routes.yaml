@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=../vendor/symfony/routing/Loader/schema/routing.schema.json
+
+# This file is the entry point to configure the routes of your app.
+# Methods with the #[Route] attribute are automatically imported.
+# See also https://symfony.com/doc/current/routing.html
+
+# To list all registered routes, run the following command:
+#   bin/console debug:router
+
+controllers:
+    resource: routing.controllers
+
+table:
+  path: ex04/create_table
+  controller: App\Controller\UserController::create_table
+
+index:
+  path: ex04
+  controller: App\Controller\UserController::index
+
+form:
+  path: ex04/create_form
+  controller: App\Controller\UserController::create_form
+
+show_users:
+  path: ex04/show_users
+  controller: App\Controller\UserController::show_users
+
+delete_user:
+  path: ex04/delete/{id}
+  controller: App\Controller\UserController::delete_user
+
+update_user:
+  path: ex04/update/{id}
+  controller: App\Controller\UserController::update_user
