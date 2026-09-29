@@ -9,6 +9,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\User;
 use App\Form\Type\UserType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\Process\Process;
 
 final class UserController extends AbstractController
 {
@@ -16,11 +19,11 @@ final class UserController extends AbstractController
 	public function show_users(EntityManagerInterface $entityManager): Response
 	{
 
-		$users = $entityManager->getRepository(User::class)->findAll();
-		if (!$users) {
-			throw $this->createNotFoundException(
-				'No users found'
-			);
+		try {
+			$users = $entityManager->getRepository(User::class)->findAll();
+		} catch (\Throwable $th) {
+			//throw $th;
+			throw new HttpException(500, "users table doesn't exist");
 		}
 
 		return $this->render('users/index.html.twig',[
@@ -29,7 +32,7 @@ final class UserController extends AbstractController
 	}
 
 	#[Route('/user', name: 'app_user')]
-	public function index(Request $request, EntityManagerInterface $entityManager): Response
+	public function user(Request $request, EntityManagerInterface $entityManager): Response
 	{
 		$user = new User();
 
@@ -54,5 +57,39 @@ final class UserController extends AbstractController
 		return $this->render('user/index.html.twig', [
 			'form' => $form,
 		]);
+	}
+
+	#[Route('/create_table', name: 'create_table')]
+	public function create_table(): Response
+	{
+		try {
+			$process1 = new Process(['php', $this->getParameter('console_path'), 'make:migration']);
+			$process1->run();
+
+			if (!$process1->isSuccessful()) {
+				return new Response($process1->getErrorOutput(), 500);
+			}
+
+			$process2 = new Process(['php', $this->getParameter('console_path'), 'doctrine:migrations:migrate', '--no-interaction']);
+			$process2->run();
+
+			if (!$process2->isSuccessful()) {
+				return new Response($process2->getErrorOutput(), 500);
+			}
+
+			return new Response(
+				"Table users has been created"
+			);
+
+		} catch (\Throwable $th) {
+			throw new Exception($th);
+
+		}
+	}
+
+	#[Route('/ex03', name: 'create_table')]
+	public function index(): Response
+	{
+		return $this->render('base.html.twig');
 	}
 }

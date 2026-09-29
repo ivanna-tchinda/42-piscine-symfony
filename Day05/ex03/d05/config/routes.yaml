@@ -10,6 +10,15 @@
 controllers:
     resource: routing.controllers
 
-app_user:
+users:
   path: /user
+  controller: App\Controller\UserController::user
+
+homepage:
+  path: /ex03
   controller: App\Controller\UserController::index
+
+
+create_table:
+  path: /create_table
+  controller: App\Controller\UserController::create_table

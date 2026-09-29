@@ -11,17 +11,17 @@ controllers:
     resource: routing.controllers
 
 table:
-  path: e02/create_table
+  path: ex02/create_table
   controller: App\Controller\UserController::create_table
 
 index:
-  path: e02
+  path: ex02
   controller: App\Controller\UserController::index
 
 form:
-  path: e02/create_form
+  path: ex02/create_form
   controller: App\Controller\UserController::create_form
 
 show_users:
-  path: e02/show_users
+  path: ex02/show_users
   controller: App\Controller\UserController::show_users

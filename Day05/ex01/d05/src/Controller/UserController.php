@@ -17,24 +17,31 @@ final class UserController extends AbstractController
 	#[Route('/success', name: 'success')]
 	public function success(): Response
 	{
-		$process1 = new Process(['php', $this->getParameter('console_path'), 'make:migration']);
-		$process1->run();
+		try {
+			$process1 = new Process(['php', $this->getParameter('console_path'), 'make:migration', '-n']);
+			$process1->run();
 
-		if (!$process1->isSuccessful()) {
-			return new Response($process1->getErrorOutput(), 500);
+			if (!$process1->isSuccessful()) {
+				return new Response($process1->getErrorOutput(), 500);
+			}
+
+			$process2 = new Process(['php', $this->getParameter('console_path'), 'doctrine:migrations:migrate', '--no-interaction']);
+			$process2->run();
+
+			if (!$process2->isSuccessful()) {
+				return new Response($process2->getErrorOutput(), 500);
+			}
+
+			return new Response(
+				"Table users has been created"
+			);
+
+		} catch (\Throwable $th) {
+			throw new Exception($th);
+
 		}
-
-		$process2 = new Process(['php', $this->getParameter('console_path'), 'doctrine:migrations:migrate', '--no-interaction']);
-		$process2->run();
-
-		if (!$process2->isSuccessful()) {
-			return new Response($process2->getErrorOutput(), 500);
-		}
-
-		return new Response(
-			"Table users has been created"
-		);
 	}
+
 	#[Route('/create_table', name: 'create_table')]
 	public function index(): Response
 	{

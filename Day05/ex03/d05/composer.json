@@ -9,7 +9,7 @@
         "ext-iconv": "*",
         "doctrine/dbal": "^3.8",
         "doctrine/doctrine-bundle": "^2.18",
-        "doctrine/doctrine-migrations-bundle": "^3.4",
+        "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^2.20",
         "symfony/console": "7.4.*",
         "symfony/doctrine-bridge": "7.4.*",
@@ -17,9 +17,12 @@
         "symfony/flex": "^2",
         "symfony/form": "7.4.*",
         "symfony/framework-bundle": "7.4.*",
+        "symfony/process": "7.4.*",
         "symfony/runtime": "7.4.*",
         "symfony/twig-bundle": "7.4.*",
-        "symfony/yaml": "7.4.*"
+        "symfony/yaml": "7.4.*",
+        "twig/extra-bundle": "^2.12|^3.0",
+        "twig/twig": "^2.12|^3.0"
     },
     "config": {
         "allow-plugins": {
@@ -72,6 +75,6 @@
         }
     },
     "require-dev": {
-        "symfony/maker-bundle": "^1.66"
+        "symfony/maker-bundle": "^1.68"
     }
 }

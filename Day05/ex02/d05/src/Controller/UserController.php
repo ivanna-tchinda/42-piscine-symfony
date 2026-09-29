@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
 class UserController extends AbstractController
 {
 
-	#[Route('/e02/show_users', name: 'show_users')]
+	#[Route('/ex02/show_users', name: 'show_users')]
 	public function show_users(Connection $connection): Response
 	{
 		$sql = "SELECT * FROM users";
@@ -76,7 +76,7 @@ class UserController extends AbstractController
 
 	}
 
-	#[Route('/e02/create_form', name: 'form')]
+	#[Route('/ex02/create_form', name: 'form')]
 	public function create_form(Request $request, Connection $connection): Response
 	{
 		$user = new User();
@@ -105,7 +105,7 @@ class UserController extends AbstractController
 		]);
 	}
 
-	#[Route('/e02/create_table', name: 'table')]
+	#[Route('/ex02/create_table', name: 'table')]
 	public function create_table(Connection $connection): Response
 	{
 		$schemaManager = $connection->createSchemaManager();
@@ -128,7 +128,7 @@ class UserController extends AbstractController
 		]);
 	}
 
-	#[Route('/e02', name: 'index')]
+	#[Route('/ex02', name: 'index')]
 	public function index(): Response
 	{
 		return $this->render('base.html.twig');
