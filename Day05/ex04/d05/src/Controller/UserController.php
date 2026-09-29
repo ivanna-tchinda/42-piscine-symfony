@@ -14,14 +14,15 @@ use Psr\Log\LoggerInterface;
 
 class UserController extends AbstractController
 {
-	public function check_user_id(int $id): bool
+	public function check_user_id(int $id, Connection $connection): bool
 	{
 		$userExists = false;
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
-		$sql = "SELECT * FROM users WHERE id=$id";
+		$schemaManager = $connection->createSchemaManager();
+		$sql = "SELECT * FROM users WHERE id=:id;";
 		if($schemaManager->tableExists('users')){
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql, [
+				'id' => $id,
+			]);
 			$result =  $stmt->fetchAllAssociative();
 			$userExists = $result ? true : false;
 		}
@@ -30,46 +31,32 @@ class UserController extends AbstractController
 		return $userExists;
 
 	}
-	#[Route('/e04/delete{id}', name: 'delete_id')]
-	public function delete_user(int $id): Response
+	#[Route('/ex04/delete{id}', name: 'delete_id')]
+	public function delete_user(int $id, Connection $connection): Response
 	{
-		$sql = "DELETE FROM users WHERE id=" . $id;
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$sql = "DELETE FROM users WHERE id=:id;";
+		$schemaManager = $connection->createSchemaManager();
 		$message = '';
-		if($this->check_user_id($id))
+		if($this->check_user_id($id, $connection))
 		{
-			$message = $conn->executeQuery($sql);
+			$message = $connection->executeQuery($sql, [
+				'id' => $id,
+			]);
 			return new Response("User with id $id has been deleted");
 		}
 		return new Response("user with id " . $id . " is not in the table");
 
 	}
-	public function db_connection(): Connection
+
+	#[Route('/ex04/show_users', name: 'show_users')]
+	public function show_users(Connection $connection): Response
 	{
-		$connectionParams = [
-			'dbname' => 'ex04',
-			'user' => 'root',
-			'password' => '1234',
-			'host' => 'localhost',
-			'driver' => 'pdo_mysql',
-		];
-		$conn = DriverManager::getConnection($connectionParams);
+		$sql = "SELECT * FROM users;";
 
-		return $conn;
-	}
-
-	#[Route('/e04/show_users', name: 'show_users')]
-	public function show_users(): Response
-	{
-		$sql = "SELECT * FROM users";
-
-		$conn = $this->db_connection();
-
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		$result = null;
 		if($schemaManager->tableExists('users')){
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
 		}
 
@@ -78,14 +65,16 @@ class UserController extends AbstractController
 		]);
 	}
 
-	public function check_user(array $user): bool
+	public function check_user(array $user, Connection $connection): bool
 	{
 		$userExists = false;
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
-		$sql = "SELECT * FROM users WHERE username='".$user['username']."' OR email='".$user['email']."';";
+		$schemaManager = $connection->createSchemaManager();
+		$sql = "SELECT * FROM users WHERE username=:username OR email=:email;";
 		if($schemaManager->tableExists('users')){
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql, [
+				'username' => $user['username'],
+				'email' => $user['email'],
+			]);
 			$result =  $stmt->fetchAllAssociative();
 			$userExists = $result ? true : false;
 		}
@@ -94,7 +83,7 @@ class UserController extends AbstractController
 		return $userExists;
 	}
 
-	public function create_user(array $user): string
+	public function create_user(array $user, Connection $connection): string
 	{
 		$username = $user['username'];
 		$name = $user['name'];
@@ -103,28 +92,33 @@ class UserController extends AbstractController
 		$birthdate = $user['birthdate']->format('Y-m-d');
 		$address = $user['address'];
 
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if(!$schemaManager->tableExists('users')){
 			return "Table has not been created";
 		}
-		if($this->check_user($user)){
+		if($this->check_user($user, $connection)){
 			return "User already exists";
 		}
-		$sql = "INSERT INTO users(username, name, email, enable, birthdate, address) VALUES ('".$username."','".
-			$name."','".
-			$email."','".
-			$enable."','".
-			$birthdate."','".
-			$address.
-			"');";
-		$conn->executeQuery($sql);
+		$sql = "INSERT INTO users(username, name, email, enable, birthdate, address) VALUES (:username,	
+			:name,
+			:email,
+			:enable,
+			:birthdate,
+			:address);";
+		$connection->executeQuery($sql, [
+			'username' => $username,
+			'name' => $name,
+			'email' => $email,
+			'enable' => $enable,
+			'birthdate' => $birthdate,
+			'address' => $address
+		]);
 		return "User ".$username. " has been created!";;
 
 	}
 
-	#[Route('/e04/create_form', name: 'form')]
-	public function create_form(Request $request): Response
+	#[Route('/ex04/create_form', name: 'form')]
+	public function create_form(Request $request, Connection $connection): Response
 	{
 		$user = array();
 		$message = '';
@@ -144,7 +138,7 @@ class UserController extends AbstractController
 		$form->handleRequest($request);
 		if ($form->isSubmitted() && $form->isValid()) {
 			$user = $form->getData();
-			$message = $this->create_user($user);
+			$message = $this->create_user($user, $connection);
 		}
 		return $this->render('form/form.html.twig',[
 			'form' => $form,
@@ -152,23 +146,22 @@ class UserController extends AbstractController
 		]);
 	}
 
-	#[Route('/e04/create_table', name: 'table')]
-	public function create_table(): Response
+	#[Route('/ex04/create_table', name: 'table')]
+	public function create_table(Connection $connection): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
-		$sql = "CREATE TABLE users(
-			id int AUTO_INCREMENT PRIMARY KEY,
-			username varchar(255) UNIQUE,
-			name varchar(255),
-			email varchar(255) UNIQUE,
-			enable BOOL,
-			birthdate DATETIME,
-			address LONGTEXT
-);";
+		$schemaManager = $connection->createSchemaManager();
+		$sql = "CREATE TABLE users (
+			id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+			username VARCHAR(255) UNIQUE,
+			name VARCHAR(255),
+			email VARCHAR(255) UNIQUE,
+			enable BOOLEAN,
+			birthdate TIMESTAMP,
+			address TEXT
+		);";
 		$message = "Table users already exists";
 		if(!$schemaManager->tableExists('users')){
-			$conn->executeQuery($sql);
+			$connection->executeQuery($sql);
 			$message = "Table users created!";	
 		}
 		return $this->render('form/index.html.twig', [
@@ -176,8 +169,8 @@ class UserController extends AbstractController
 		]);
 	}
 
-	#[Route('/e04', name: 'index')]
-	public function index(Connection $connection): Response
+	#[Route('/ex04', name: 'index')]
+	public function index(): Response
 	{
 		return $this->render('base.html.twig');
 

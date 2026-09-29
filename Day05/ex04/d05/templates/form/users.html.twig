@@ -42,13 +42,13 @@ table, th, td, caption {
 <td>{{user.enable == 1 ? 'Yes' : 'No'}}</td>
 <td>{{user.birthdate|date("m/d/Y")}}</td>
 <td>{{user.address}}</td>
-<td><a href="/e04/delete/{{user.id}}">Delete</a></td>
+<td><a href="/ex04/delete/{{user.id}}">Delete</a></td>
 </tr>
 {% endfor %}	
 </tbody>
 </table>
 
-<a href="/e04/create_form">Back to form</a>
+<a href="/ex04/create_form">Back to form</a>
 
 {% endblock %}
 </body>
