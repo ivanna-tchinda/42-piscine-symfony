@@ -17,103 +17,87 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 final class TablesController extends AbstractController
 {
-	public function db_connection(): Connection
-	{
-		$dsnParser = new DsnParser();
-		$connectionParams = $dsnParser
-			->parse($this->getParameter('databaseUrl'));
-		$conn = DriverManager::getConnection($connectionParams);
-		return $conn;
-	}
 
-	#[Route('/add_column', name: 'add_column')]
-	public function add_column(Request $request): Response
+	#[Route('/add_column_persons', name: 'add_column_persons')]
+	public function add_column_persons(Connection $connection, Request $request): Response
 	{
 		$column_data = array();
+		$message = '';
 		$form = $this->createFormBuilder()
 	       ->add('column_name', TextType::class)
-	       ->add('data_type', TextType::class)
+	       ->add('data_type', ChoiceType::class, [
+                'label' => 'Column type',
+                'choices' => [
+                    'VARCHAR' => 'VARCHAR(255)',
+                    'INTEGER' => 'INTEGER',
+                    'BOOLEAN' => 'BOOLEAN',
+                    'DATE' => 'DATE',
+                    'TIMESTAMP' => 'TIMESTAMP',
+                    'TEXT' => 'TEXT',
+                    'FLOAT' => 'FLOAT',
+                ],
+            ])
 	       ->add('save', SubmitType::class, ['label' => 'Add column'])
 	       ->getForm();
 
 		$form->handleRequest($request);
 		if ($form->isSubmitted() && $form->isValid()) {
 			$column_data = $form->getData();
-			return $this->redirectToRoute('add_column_data', [
-				'column_name' => $column_data['column_name'],
-				'data_type' => $column_data['data_type']
-			]);
-		}	
-		return $this->render('tables/persons/new-column-form.html.twig', [
-			'form' => $form
-		]);
-	}
 
-	#[Route('/add_column/{column_name}/{data_type}', name: 'add_column_data')]
-	public function add_column_data(string $column_name, string $data_type): Response
-	{
-		$sql = "ALTER TABLE persons ADD $column_name $data_type";
+			$column_name = $column_data['column_name'];
+			$data_type = $column_data['data_type'];
 
-		$conn = $this->db_connection();
-		$message = "Column successfully added in table persons";
-		$schemaManager = $conn->createSchemaManager();
-		$result = null;
-		try {
-			$stmt = $conn->executeQuery($sql);
-		} catch (\Doctrine\DBAL\Exception\DriverException $e)
-		{
-			return new Response("Failed creating a column");
+			if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $column_name)) {
+				return new Response('Invalid column name');
+			}
+
+			$sql = "ALTER TABLE persons
+                ADD COLUMN $column_name $data_type";
+			$connection->executeStatement($sql);
+
+        	$message = "Column $column_name has been added";
 		}
-		return $this->render('tables/message.html.twig', [
-			'message' => $message
+		return $this->render('form/add_column.html.twig', [
+			'form' => $form,
+			'message' => $message,
 		]);
 
 
 	}
 
-	public function get_columns(string $table_name): array
+	#[Route('/show_persons', name: 'show_persons')]
+	public function show_persons(Connection $connection): Response
 	{
-		$sql = " SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = N'$table_name'
-";
-
-		$conn = $this->db_connection();
-
-		$schemaManager = $conn->createSchemaManager();
-		$result = null;
+		$schemaManager = $connection->createSchemaManager();
 		if($schemaManager->tableExists('persons')){
-			$stmt = $conn->executeQuery($sql);
-			$result =  $stmt->fetchAllAssociative();
+			$sql = "SELECT * FROM persons";
+			$stmt = $connection->executeQuery($sql);
+			$persons =  $stmt->fetchAllAssociative();
+			$columns = $schemaManager->listTableColumns('persons');
+			$columnNames = [];
+			foreach ($columns as $column) {
+    			$columnNames[] = $column->getName();
+			}
 		}
-
-		return $result;
-
-	}
-
-	#[Route('/show_table/persons', name: 'table_persons')]
-	public function table_persons(Request $request): Response
-	{
-		$sql = "SELECT * FROM persons";
-
-		$conn = $this->db_connection();
-		$columns_name = $this->get_columns("persons");
-		$schemaManager = $conn->createSchemaManager();
-		$stmt = $conn->executeQuery($sql);
-		$result =  $stmt->fetchAllAssociative();
+		else{
+			return $this->render('home/index.html.twig', [
+				'message' => "Cannont create table persons if table addresses is not created"
+			]);
+		}
 
 		return $this->render('tables/persons/index.html.twig', [
-			'columns_name' => $columns_name,
-			'all_persons' => $result,
+			'columns' => $columnNames,
+			'persons' => $persons,
 		]);
 	}
 
-	public function check_user(array $user): bool
+	public function check_user(Connection $connection, array $user): bool
 	{
 		$userExists = false;
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		$sql = "SELECT * FROM users WHERE username='".$user['username']."' OR email='".$user['email']."';";
 		if($schemaManager->tableExists('users')){
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
 			$userExists = $result ? true : false;
 		}
@@ -122,127 +106,140 @@ final class TablesController extends AbstractController
 		return $userExists;	
 	}
 
-	public function create_table_addresses(): string
+	#[Route('/create_addresses', name: 'create_addresses')]
+	public function create_table_addresses(Connection $connection): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
-		$sql = "CREATE TABLE addresses(
-			address_id int AUTO_INCREMENT PRIMARY KEY,
-			address varchar(255) UNIQUE
-);";
-		if(!$schemaManager->tableExists('bank_accounts')){
-			$conn->executeQuery($sql);
-			return "Successfully created table bank_accounts!";
-		}
-		return "Failed creating table bank_accounts";
+		try {
+			$schemaManager = $connection->createSchemaManager();
+			if(!$schemaManager->tableExists('addresses')){
+				$sql = "CREATE TABLE addresses(
+				id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+				address varchar(255) UNIQUE
+				);";
+				$connection->executeQuery($sql);
+				return new Response("Successfully created table addresses!");
 
+			}
+			return new Response("Table address already exists");
+		} catch (\Throwable $th) {
+			throw $th;
+		}
 	}
 
-	public function table_addresses(): Response
+	#[Route('/show_addresses', name: 'show_addresses')]
+	public function show_addresses(Connection $connection): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if($schemaManager->tableExists('addresses')){
 			$sql = "SELECT * FROM addresses";
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
-			$columns_name = $this->get_columns("addresses");
 		}
 		else
-			return new Response($this->create_table_addresses());
-		return $this->render('show_all/index.html.twig', [
-			'columns_name' => $columns_name,
+			return new Response("Table addresses does not exists");
+		return $this->render('tables/addresses/index.html.twig', [
 			'result' => $result,
-			'table_name' => 'Addresses'
+			'addresses' => $result
 		]);
 
 	}
 
-	public function create_table_bank_accounts(): string
+	#[Route('/create_bank', name: 'create_bank')]
+	public function create_bank(Connection $connection): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
-		if(!$schemaManager->tableExists('persons'))
-			return "Cannot create table bank_accounts if table persons is not created, go to route /home";
-		$sql = "CREATE TABLE bank_accounts(
-			bank_account_id int AUTO_INCREMENT PRIMARY KEY,
-			person_id int UNIQUE,
-			name varchar(255) UNIQUE,
-			card_id int UNIQUE,
-			FOREIGN KEY (person_id) REFERENCES persons(person_id)
-);";
-		if(!$schemaManager->tableExists('bank_accounts')){
-			$conn->executeQuery($sql);
-			return "Successfully created table bank_accounts!";
+		$schemaManager = $connection->createSchemaManager();
+		if(!$schemaManager->tableExists('persons')){
+			return new Response("Cannot create table bank_accounts if table persons is not created, go to route /home");
 		}
-		return "Failed creating table bank_accounts";
 
+		else if($schemaManager->tableExists('bank_accounts')){
+			return new Response("Table bank_accounts already exists");
+		}
+		else{
+			$sql = "CREATE TABLE bank_accounts(
+				id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+				person_id int UNIQUE,
+				name varchar(255) UNIQUE,
+				card_id int UNIQUE,
+				FOREIGN KEY (person_id) REFERENCES persons(id)
+			);";
+			$connection->executeQuery($sql);
+			return new Response("Successfully created table bank_accounts!");
+		}
+		return new Response("Failed creating table bank_accounts");
 	}
 
-	public function bank_accounts(): Response
+	#[Route('/show_bank', name: 'show_bank')]
+	public function show_bank(Connection $connection): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if($schemaManager->tableExists('bank_accounts')){
 			$sql = "SELECT * FROM bank_accounts";
-			$stmt = $conn->executeQuery($sql);
-			$result =  $stmt->fetchAllAssociative();
-			$columns_name = $this->get_columns("bank_accounts");
+			$stmt = $connection->executeQuery($sql);
+			$accounts =  $stmt->fetchAllAssociative();
+			$columns = $schemaManager->listTableColumns('bank_accounts');
+			$columnNames = [];
+			foreach ($columns as $column) {
+    			$columnNames[] = $column->getName();
+			}
 		}
-		else
-			return new Response($this->create_table_bank_accounts());
-		return $this->render('show_all/index.html.twig', [
-			'columns_name' => $columns_name,
-			'result' => $result,
-			'table_name' => 'Bank Accounts'
+		else{
+			return $this->render('home/index.html.twig', [
+				'message' => "Cannont create table bank_accounts if table persons is not created"
+			]);
+		}
+
+		return $this->render('tables/bank_accounts/index.html.twig', [
+			'columns' => $columnNames,
+			'bank_accounts' => $accounts,
 		]);
 
 	}
 
-	#[Route('/show_table/{table_name}', name: 'show_tables')]
-	public function show_table(string $table_name): Response
+	#[Route('/create_persons', name: 'create_persons')]
+	public function create_persons(Connection $connection): Response
 	{
-		if($table_name == "bank_accounts")
-			return $this->bank_accounts();
-		else if($table_name == "addresses")
-			return $this->table_addresses();
-		return new Response("Wrong table name; Available tables: addresses, bank_accounts");
-	}
-
-
-	#[Route('/home', name: 'homepage')]
-	public function homepage(): Response
-	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
-		if(!$schemaManager->tableExists('addresses'))
-			return new Response("Cannont create table persons if table addresses is not created, go to route /show_table/addresses");
-		$sql = "CREATE TABLE persons(
-			person_id int AUTO_INCREMENT PRIMARY KEY,
-			address_id int,
-			username varchar(255) UNIQUE,
-			name varchar(255),
-			email varchar(255) UNIQUE,
-			enable BOOL,
-			birthdate DATETIME,
-			FOREIGN KEY (address_id) REFERENCES addresses(address_id)
-);";
-		$message = "Table persons already exists";
+		$schemaManager = $connection->createSchemaManager();
+		if(!$schemaManager->tableExists('addresses')){
+			return $this->render('home/index.html.twig', [
+				'message' => "Cannont create table persons if table addresses is not created"
+			]);
+		}
 		if(!$schemaManager->tableExists('persons')){
-			$conn->executeQuery($sql);
+			$sql = "CREATE TABLE persons(
+				id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+				address_id int,
+				username varchar(255) UNIQUE,
+				name varchar(255),
+				email varchar(255) UNIQUE,
+				enable BOOL,
+				birthdate TIMESTAMP,
+				FOREIGN KEY (address_id) REFERENCES addresses(id)
+			);";
+			$connection->executeQuery($sql);
 			$message = "Table persons created!";
 		}
-
+		else{
+			return $this->render('home/index.html.twig', [
+				'message' => "Table persons already exists"
+			]);
+		}
 		return $this->render('home/index.html.twig', [
 			'message' => $message
 		]);
 	}
 
-	#[Route('/tables', name: 'app_tables')]
-	public function index(): Response
+	#[Route('/ex08', name: 'homepage')]
+	public function index(Connection $connection): Response
 	{
-		return $this->render('tables/index.html.twig', [
-			'controller_name' => 'TablesController',
+		$schemaManager = $connection->createSchemaManager();
+		$addresses = $schemaManager->tableExists('addresses');
+		$persons = $schemaManager->tableExists('persons');
+		$bank_accounts = $schemaManager->tableExists('bank_accounts');
+		return $this->render('base.html.twig', [
+			'addresses' => $addresses,
+			'persons' => $persons,
+			'bank_accounts' => $bank_accounts,
 		]);
 	}
 }

@@ -9,3 +9,42 @@
 
 controllers:
     resource: routing.controllers
+
+homepage:
+  path: /ex08
+  controller: App\Controller\TablesController::index
+
+create_addresses:
+  path: /create_addresses
+  controller: App\Controller\TablesController::create_addresses
+
+show_addresses:
+  path: /show_addresses
+  controller: App\Controller\TablesController::show_addresses
+
+create_persons:
+  path: /create_persons
+  controller: App\Controller\TablesController::create_persons
+
+show_persons:
+  path: /show_persons
+  controller: App\Controller\TablesController::show_persons
+
+table_persons:
+  path: /show_table/persons
+  controller: App\Controller\TablesController::table_persons
+
+add_column_persons:
+  path: /add_column_persons
+  controller: App\Controller\TablesController::add_column_persons
+
+
+create_bank:
+  path: /create_bank
+  controller: App\Controller\TablesController::create_bank
+
+show_bank:
+  path: /show_bank
+  controller: App\Controller\TablesController::show_bank
+
+

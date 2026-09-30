@@ -11,10 +11,26 @@
         {% endblock %}
     </head>
     <body>
-	<a href="/home">Homepage</a>
-	<a href="/show_table/persons">Show table persons</a>
-	<a href="/show_table/bank_accounts">Show table Bank accounts</a>
-	<a href="/show_table/addresses">Show table Addresses</a>
-        {% block body %}{% endblock %}
+        {% block body %}
+            <h1>Exercise 08 - SQL - update table structure, create relations</h1>
+            <ul>
+                <li><a href="/ex08">Homepage</a></li>
+                {% if not addresses %}
+                    <li><a href="/create_addresses">Create table addresses</a></li>
+                {% else %}	
+                    <li><a href="/show_addresses">Show table addresses</a></li>
+                {% endif %}
+                {% if not bank_accounts%}
+                    <li><a href="/create_bank">Create table bank_accounts</a></li>
+                {% else %}	
+                    <li><a href="/show_bank">Show table bank_accounts</a></li>
+                {% endif %}
+                {% if not persons %}
+                    <li><a href="/create_persons">Create table persons</a></li>
+                {% else %}	
+                    <li><a href="/show_persons">Show table persons</a></li>
+                {% endif %}
+            </ul>
+        {% endblock %}
     </body>
 </html>

@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Table persons{% endblock %}
+{% block title %}Table addresses {% endblock %}
 
 {% block body %}
 <style>
@@ -14,7 +14,7 @@ table, th, td, caption {
 
 <div class="example-wrapper">
 
-<a href="/add_column_persons">Add column</a>
+
 <table>
     <thead>
         <tr>
@@ -25,17 +25,16 @@ table, th, td, caption {
     </thead>
 
     <tbody>
-        {% for person in persons %}
+        {% for account in bank_accounts %}
             <tr>
                 {% for column in columns %}
-                    <td>{{ attribute(person, column) }}</td>
+                    <td>{{ attribute(account, column) }}</td>
                 {% endfor %}
             </tr>
         {% endfor %}
     </tbody>
 </table>
 <a href="/ex08">Home page</a>
-
 
 </div>
 
