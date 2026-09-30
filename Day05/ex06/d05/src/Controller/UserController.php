@@ -32,10 +32,10 @@ class UserController extends AbstractController
 
 	}
 
-	#[Route('/ex04/update/{id}', name: 'update_user')]
+	#[Route('/ex06/update/{id}', name: 'update_user')]
 	public function update_user(Request $request, Connection $connection, int $id): Response
 	{
-		$sql = "SELECT 1 FROM users WHERE id=:id;";
+		$sql = "SELECT * FROM users WHERE id=:id;";
 
 		$schemaManager = $connection->createSchemaManager();
 		$user = null;
@@ -44,21 +44,20 @@ class UserController extends AbstractController
 				'id' => $id,
 			]);
 			$user =  $stmt->fetchAllAssociative();
-			print_r($user[0]);
 			$message = '';
 			$form = $this->createFormBuilder()
-			->add('username', TextType::class, [ 'data' => $user[0]])
-			->add('name', TextType::class, [ 'data' => $user['name']])
-			->add('email', TextType::class, [ 'data' => $user['email']])
+			->add('username', TextType::class, [ 'data' => $user[0]['username']])
+			->add('name', TextType::class, [ 'data' => $user[0]['name']])
+			->add('email', TextType::class, [ 'data' => $user[0]['email']])
 			->add('enable', ChoiceType::class, [
 				'choices'  => [
 					'Yes' => true,
 					'No' => false,
 				],
-				'data' => $user['enable']])
-				->add('birthdate', DateType::class, [ 'data' => $user['birthdate']])
-				->add('address', TextType::class, [ 'data' => $user['address']])
-				->add('save', SubmitType::class, ['label' => 'Create User'])
+				'data' => $user[0]['enable']])
+				->add('birthdate', DateType::class, [ 'data' => new \DateTime($user[0]['birthdate'])])
+				->add('address', TextType::class, [ 'data' => $user[0]['address']])
+				->add('save', SubmitType::class, ['label' => 'Update user'])
 				->getForm();
 			$form->handleRequest($request);
 			if ($form->isSubmitted() && $form->isValid()) {
@@ -66,13 +65,13 @@ class UserController extends AbstractController
 				$message = $this->edit_user($id, $user, $connection);
 			}
 		}
-		return $this->render('form/form.html.twig',[
+		return $this->render('form/update.html.twig',[
 			'form' => $form,
 			'message' => $message
 		]);
 	}
 
-	#[Route('/ex04/delete/{id}', name: 'delete_id')]
+	#[Route('/ex06/delete/{id}', name: 'delete_id')]
 	public function delete_user(int $id, Connection $connection): Response
 	{
 		$sql = "DELETE FROM users WHERE id=:id;";
@@ -89,7 +88,7 @@ class UserController extends AbstractController
 
 	}
 
-	#[Route('/ex04/show_users', name: 'show_users')]
+	#[Route('/ex06/show_users', name: 'show_users')]
 	public function show_users(Connection $connection): Response
 	{
 		$sql = "SELECT * FROM users;";
@@ -140,8 +139,8 @@ class UserController extends AbstractController
 		if($this->check_user($user, $connection)){
 			return "User already exists";
 		}
-		$sql = "UPDATE users SET username=:username, name=:name, email=:email, enable=:enable, birthdate=:birthdate, address=:address)
-		WHERE id=:id);";
+		$sql = "UPDATE users SET username=:username, name=:name, email=:email, enable=:enable, birthdate=:birthdate, address=:address
+		WHERE id=:id;";
 		$connection->executeQuery($sql, [
 			'username' => $username,
 			'name' => $name,
@@ -189,7 +188,7 @@ class UserController extends AbstractController
 
 	}
 
-	#[Route('/ex04/create_form', name: 'form')]
+	#[Route('/ex06/create_form', name: 'form')]
 	public function create_form(Request $request, Connection $connection): Response
 	{
 		$user = array();
@@ -218,7 +217,7 @@ class UserController extends AbstractController
 		]);
 	}
 
-	#[Route('/ex04/create_table', name: 'table')]
+	#[Route('/ex06/create_table', name: 'table')]
 	public function create_table(Connection $connection): Response
 	{
 		$schemaManager = $connection->createSchemaManager();
@@ -241,7 +240,7 @@ class UserController extends AbstractController
 		]);
 	}
 
-	#[Route('/ex04', name: 'index')]
+	#[Route('/ex06', name: 'index')]
 	public function index(): Response
 	{
 		return $this->render('base.html.twig');

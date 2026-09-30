@@ -11,25 +11,25 @@ controllers:
     resource: routing.controllers
 
 table:
-  path: ex04/create_table
+  path: ex06/create_table
   controller: App\Controller\UserController::create_table
 
 index:
-  path: ex04
+  path: ex06
   controller: App\Controller\UserController::index
 
 form:
-  path: ex04/create_form
+  path: ex06/create_form
   controller: App\Controller\UserController::create_form
 
 show_users:
-  path: ex04/show_users
+  path: ex06/show_users
   controller: App\Controller\UserController::show_users
 
 delete_user:
-  path: ex04/delete/{id}
+  path: ex06/delete/{id}
   controller: App\Controller\UserController::delete_user
 
 update_user:
-  path: ex04/update/{id}
+  path: ex06/update/{id}
   controller: App\Controller\UserController::update_user
