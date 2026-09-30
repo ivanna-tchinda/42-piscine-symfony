@@ -9,3 +9,11 @@
 
 controllers:
     resource: routing.controllers
+
+index:
+  path: /ex09
+  controller: App\Controller\UserController::index
+
+person:
+  path: /person
+  controller: App\Controller\UserController::person

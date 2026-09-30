@@ -154,7 +154,7 @@ final class UserController extends AbstractController
 	}
 
 	#[Route('/person', name: 'app_person')]
-	public function index(Request $request, EntityManagerInterface $entityManager): Response
+	public function person(Request $request, EntityManagerInterface $entityManager): Response
 	{
 		$person = new Person();
 
@@ -180,5 +180,11 @@ final class UserController extends AbstractController
 			'form' => $form,
 			'message' => ''
 		]);
+	}
+
+	#[Route('/ex09', name: 'index')]
+	public function index(Request $request, EntityManagerInterface $entityManager): Response
+	{
+		return $this->render('base.html.twig');
 	}
 }
