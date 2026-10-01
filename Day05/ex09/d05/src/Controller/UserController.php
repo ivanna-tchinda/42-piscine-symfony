@@ -7,15 +7,54 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Person;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Tools\DsnParser;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use App\Entity\Address;
 use App\Entity\BankAccount;
 use App\Form\PersonType;
 use App\Form\AddressType;
+use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Form\BankAccountType;
+use Symfony\Component\Process\Process;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class UserController extends AbstractController
 {
+	#[Route('/create_table', name: 'create_table')]
+	public function create_table(Connection $connection): Response
+	{
+		try {
+			$schemaManager = $connection->createSchemaManager();
+			if($schemaManager->tablesExist('persons') || $schemaManager->tablesExist('addresses') | $schemaManager->tablesExist('bank_accounts')) {
+				return new Response("Tables already exists");
+			}
+			$process1 = new Process(['php', $this->getParameter('console_path'), 'make:migration']);
+			$process1->run();
+
+			if (!$process1->isSuccessful()) {
+				return new Response($process1->getErrorOutput(), 500);
+			}
+
+			$process2 = new Process(['php', $this->getParameter('console_path'), 'doctrine:migrations:migrate', '--no-interaction']);
+			$process2->run();
+
+			if (!$process2->isSuccessful()) {
+				return new Response($process2->getErrorOutput(), 500);
+			}
+
+			return new Response(
+				"All tables have been created"
+			);
+
+		} catch (\Throwable $th) {
+			throw new Exception($th);
+
+		}
+	}
+
 	#[Route('/show_bank_account', name: 'show_bankaccount')]
 	public function show_bankaccount(EntityManagerInterface $entityManager): Response
 	{
@@ -85,16 +124,29 @@ final class UserController extends AbstractController
 	}
 
 	#[Route('/show_person', name: 'show_persons')]
-	public function show_persons(EntityManagerInterface $entityManager): Response
+	public function show_persons(Connection $connection): Response
 	{
+		$schemaManager = $connection->createSchemaManager();
 
-		$persons = $entityManager->getRepository(Person::class)->findAll();
-		if (!$persons) {
-			return new Response("No persons registered in table persons");
+		if (!$schemaManager->tablesExist(['persons'])) {
+			return new Response("Table persons doesn't exist");
 		}
 
-		return $this->render('table/person.html.twig',[
-			'persons' => $persons
+		$columns = $schemaManager->listTableColumns('persons');
+
+		$columnNames = [];
+
+		foreach ($columns as $column) {
+			$columnNames[] = $column->getName();
+		}
+
+		$persons = $connection
+			->executeQuery('SELECT * FROM persons')
+			->fetchAllAssociative();
+
+		return $this->render('table/person.html.twig', [
+			'columns' => $columnNames,
+			'persons' => $persons,
 		]);
 	}
 

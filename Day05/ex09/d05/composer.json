@@ -9,7 +9,7 @@
         "ext-iconv": "*",
         "doctrine/dbal": "^3.10.6",
         "doctrine/doctrine-bundle": "^2.19.1",
-        "doctrine/doctrine-migrations-bundle": "^3.7.1",
+        "doctrine/doctrine-migrations-bundle": "^3.7",
         "doctrine/orm": "^2.20.13",
         "symfony/console": "7.4.*",
         "symfony/doctrine-bridge": "7.4.*",

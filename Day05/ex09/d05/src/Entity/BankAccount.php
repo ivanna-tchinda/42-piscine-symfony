@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\BankAccountRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Table(name: 'bank_accounts')]
 #[ORM\Entity(repositoryClass: BankAccountRepository::class)]
 class BankAccount
 {

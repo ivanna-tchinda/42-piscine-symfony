@@ -10,37 +10,27 @@ table, th, td, caption {
     </head>
     <body>
 
+<a href="/add_column">Add column</a>
 <table>
-<caption>All persons</caption>
-<thead>
-<tr>
-<th>Id</th>
-<th>Username</th>
-<th>Name</th>
-<th>Email</th>
-<th>Enable</th>
-<th>Birthdate</th>
-<th>Address</th>
-<th>Account number</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-{% for user in persons %}
-<tr>
-<td>{{user.id}}</td>
-<td>{{user.username}}</td>
-<td>{{user.name}}</td>
-<td>{{user.email}}</td>
-<td>{{user.enable == 1 ? 'Yes' : 'No'}}</td>
-<td>{{user.birthdate|date("m/d/Y")}}</td>
-<td>{{user.address.address}}</td>
-<td>{{user.bankAccount.number}}</td>
-<td><a href="/delete/{{user.id}}">Delete</a>/<a href="/edit/{{user.id}}">Update</a></td>
-</tr>
-{% endfor %}	
-</tbody>
+    <thead>
+        <tr>
+            {% for column in columns %}
+                <th>{{ column }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for person in persons %}
+            <tr>
+                {% for column in columns %}
+                    <td>{{ attribute(person, column) }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
 </table>
+
 
 <a href="/person">Back to form</a>
 

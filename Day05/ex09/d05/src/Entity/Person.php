@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PersonRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ORM\Table(name: 'persons')]
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
 class Person
 {
@@ -24,6 +25,9 @@ class Person
 
     #[ORM\Column]
     private ?bool $enable = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $adult = null;
 
     #[ORM\Column]
     private ?\DateTime $birthdate = null;
@@ -87,6 +91,18 @@ class Person
     public function setEnable(bool $enable): static
     {
         $this->enable = $enable;
+
+        return $this;
+    }
+
+    public function isAdult(): ?bool
+    {
+        return $this->adult;
+    }
+
+    public function setAdult(bool $adult): static
+    {
+        $this->adult = $adult;
 
         return $this;
     }
