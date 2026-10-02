@@ -9,3 +9,15 @@
 
 controllers:
     resource: routing.controllers
+
+index:
+  path: /ex10
+  controller: App\Controller\TablesController::index
+
+table_users_sql:
+  path: /show_users_sql
+  controller: App\Controller\TablesController::table_users_sql
+
+table_users_orm:
+  path: /show_users_orm
+  controller: App\Controller\TablesController::show_users_orm
