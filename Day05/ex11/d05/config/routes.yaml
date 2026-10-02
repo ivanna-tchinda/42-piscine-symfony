@@ -30,6 +30,10 @@ table_bank_accounts:
   path: /show_table/bank_accounts
   controller: App\Controller\TablesController::bank_accounts
 
-filter_sort:
-  path: /filter_sort
-  controller: App\Controller\TablesController::filter_sort
+filter:
+  path: /filter
+  controller: App\Controller\TablesController::filter
+
+sort:
+  path: /sort
+  controller: App\Controller\TablesController::sort

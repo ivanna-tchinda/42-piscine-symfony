@@ -14,42 +14,75 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
+use App\Entity\Address;
+use App\Entity\BankAccount;
+use App\Form\PersonType;
+use App\Form\AddressType;
 
 final class TablesController extends AbstractController
 {
-	#[Route('/filter_sort', name: 'filter_sort')]
-	public function filter_sort(Connection $connection, Request $request)
+	public function filter_persons(Connection $connection, array $form_data): array
+	{
+		$column_name = $form_data['type'];
+		$value = $form_data['value'];
+		$sql = "SELECT
+			persons.id,
+			persons.username,
+			persons.name,
+			persons.email,
+			persons.enable,
+			persons.birthdate,
+			addresses.address
+		FROM persons
+		JOIN addresses
+			ON persons.address_id = addresses.id
+		WHERE persons.enable = TRUE
+		ORDER BY persons.username ASC;";
+		$stmt = $connection->executeQuery($sql);
+		return $stmt->fetchAllAssociative();
+	}
+
+	public function sort_persons(Connection $connection, array $form_data): array
+	{
+		$column_name = $form_data['col_name'];
+		$value = $form_data['value'];
+		$sql = "SELECT *
+			FROM persons
+			ORDER BY $column_name $value;";
+		$stmt = $connection->executeQuery($sql);
+		return $stmt->fetchAllAssociative();
+	}
+
+
+	#[Route('/sort', name: 'sort')]
+	public function sort(Connection $connection, Request $request): Response
 	{
 		$sql = "SELECT * FROM persons";
 		$schemaManager = $connection->createSchemaManager();
 		$stmt = $connection->executeQuery($sql);
 		$persons =  $stmt->fetchAllAssociative();
-		//FILTER FORM
-		$form_filter = $this->createFormBuilder()
-	       ->add('type', ChoiceType::class, [
-				'choices' => [
-					'Filter' => "Filter",
-					'Sort' => "Sort",
-				]])
-		   ->getForm();
-		$form_filter->handleRequest($request);
-		if ($form_filter->isSubmitted() && $form_filter->isValid()) {
-			$person = $form_filter->getData();
-			$message = $this->create_user($connection, $person);
-		}
 
-		//SORT FORM
+		$columns = $schemaManager->listTableColumns('persons');
+		$columnNames = [];
+		foreach ($columns as $column) {
+    		$columnNames[] = $column->getName();
+		}
+		$choices = array_combine($columnNames, $columnNames);
+
 		$form_sort = $this->createFormBuilder()
-	       ->add('type', ChoiceType::class, [
+			->add('col_name', ChoiceType::class, [
+				'choices' => $choices])
+			->add('value', ChoiceType::class, [
 				'choices' => [
 					'ASC' => "ASC",
 					'DESC' => "DESC",
 				]])
+			->add('save', SubmitType::class, ['label' => 'Save'])
 		   ->getForm();
 		$form_sort->handleRequest($request);
 		if ($form_sort->isSubmitted() && $form_sort->isValid()) {
-			$person = $form_sort->getData();
-			$message = $this->create_user($connection, $person);
+			$sorted = $form_sort->getData();
+			$persons = $this->sort_persons($connection, $sorted);
 		}
 
 		$columns = $schemaManager->listTableColumns('persons');
@@ -61,6 +94,47 @@ final class TablesController extends AbstractController
 			'columns_name' => $columnNames,
 			'all_persons' => $persons,
 			'form_sort' => $form_sort,
+		]);
+	}
+
+
+
+	#[Route('/filter', name: 'filter')]
+	public function filter(Connection $connection, Request $request)
+	{
+		$sql = "SELECT * FROM persons";
+		$schemaManager = $connection->createSchemaManager();
+		$stmt = $connection->executeQuery($sql);
+		$persons =  $stmt->fetchAllAssociative();
+
+		$columns = $schemaManager->listTableColumns('persons');
+		$columnNames = [];
+		foreach ($columns as $column) {
+    		$columnNames[] = $column->getName();
+		}
+		$choices = array_combine($columnNames, $columnNames);
+		//FILTER FORM
+		$form_filter = $this->createFormBuilder()
+	       ->add('type', ChoiceType::class, [
+				'choices' => $choices,
+			])
+	       ->add('value', TextType::class)
+		    ->add('save', SubmitType::class, ['label' => 'Save'])
+		   ->getForm();
+		$form_filter->handleRequest($request);
+		if ($form_filter->isSubmitted() && $form_filter->isValid()) {
+			$filtered = $form_filter->getData();
+			$persons = $this->filter_persons($connection, $filtered);
+		}
+
+		$columns = $schemaManager->listTableColumns('persons');
+		$columnNames = [];
+		foreach ($columns as $column) {
+    		$columnNames[] = $column->getName();
+		}
+		return $this->render('tables/filtered.html.twig', [
+			'columns_name' => $columnNames,
+			'all_persons' => $persons,
 			'form_filter' => $form_filter
 		]);
 	}
@@ -217,9 +291,9 @@ final class TablesController extends AbstractController
     			$columnNames[] = $column->getName();
 			}
 			$form = $this->createFormBuilder()
-		->add('address', TextType::class)
-		->add('save', SubmitType::class, ['label' => 'Create Address'])
-		->getForm();
+				->add('address', TextType::class)
+				->add('save', SubmitType::class, ['label' => 'Create Address'])
+				->getForm();
 			$form->handleRequest($request);
 			if ($form->isSubmitted() && $form->isValid()) {
 				$address = $form->getData();

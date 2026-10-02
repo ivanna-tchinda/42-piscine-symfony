@@ -3,8 +3,7 @@
 {% block title %}Table persons{% endblock %}
 
 {% block body %}
-<style>
-table, th, td, caption {
+<style>table, th, td, caption {
   border: 1px solid black;
 }
 
@@ -14,10 +13,8 @@ table, th, td, caption {
 
 <div class="example-wrapper">
 
-<a href="/filter">Filter table</a>
-<a href="/sort">Sort table</a>
 <table>
-<caption>All persons</caption>
+<caption>Filter</caption>
 <thead>
 <tr>
 {% for column in columns_name %}
@@ -36,7 +33,9 @@ table, th, td, caption {
 </tbody>
 </table>
 
-{{form(form)}}
+
+<h2>Filter by:</h2>
+{{form(form_filter)}}
 </div>
 
 {% endblock %}
