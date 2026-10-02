@@ -9,3 +9,27 @@
 
 controllers:
     resource: routing.controllers
+
+index:
+  path: /ex11
+  controller: App\Controller\TablesController::index
+
+homepage:
+  path: /home
+  controller: App\Controller\TablesController::homepage
+
+table_persons:
+  path: /show_table/persons
+  controller: App\Controller\TablesController::table_persons
+
+table_addresses:
+  path: /show_table/addresses
+  controller: App\Controller\TablesController::table_addresses
+
+table_bank_accounts:
+  path: /show_table/bank_accounts
+  controller: App\Controller\TablesController::bank_accounts
+
+filter_sort:
+  path: /filter_sort
+  controller: App\Controller\TablesController::filter_sort

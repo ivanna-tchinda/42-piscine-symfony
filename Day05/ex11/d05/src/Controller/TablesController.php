@@ -17,38 +17,61 @@ use Doctrine\DBAL\DBALException;
 
 final class TablesController extends AbstractController
 {
-	public function db_connection(): Connection
+	#[Route('/filter_sort', name: 'filter_sort')]
+	public function filter_sort(Connection $connection, Request $request)
 	{
-		$dsnParser = new DsnParser();
-		$connectionParams = $dsnParser
-			->parse($this->getParameter('databaseUrl'));
-		$conn = DriverManager::getConnection($connectionParams);
-		return $conn;
-	}
-
-
-	public function get_columns(string $table_name): array
-	{
-		$sql = "DESCRIBE $table_name";
-
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
-		$result = array();
-		if($schemaManager->tableExists($table_name)){
-			$stmt = $conn->executeQuery($sql);
-			$result =  $stmt->fetchAllAssociative();
+		$sql = "SELECT * FROM persons";
+		$schemaManager = $connection->createSchemaManager();
+		$stmt = $connection->executeQuery($sql);
+		$persons =  $stmt->fetchAllAssociative();
+		//FILTER FORM
+		$form_filter = $this->createFormBuilder()
+	       ->add('type', ChoiceType::class, [
+				'choices' => [
+					'Filter' => "Filter",
+					'Sort' => "Sort",
+				]])
+		   ->getForm();
+		$form_filter->handleRequest($request);
+		if ($form_filter->isSubmitted() && $form_filter->isValid()) {
+			$person = $form_filter->getData();
+			$message = $this->create_user($connection, $person);
 		}
-		return $result;
+
+		//SORT FORM
+		$form_sort = $this->createFormBuilder()
+	       ->add('type', ChoiceType::class, [
+				'choices' => [
+					'ASC' => "ASC",
+					'DESC' => "DESC",
+				]])
+		   ->getForm();
+		$form_sort->handleRequest($request);
+		if ($form_sort->isSubmitted() && $form_sort->isValid()) {
+			$person = $form_sort->getData();
+			$message = $this->create_user($connection, $person);
+		}
+
+		$columns = $schemaManager->listTableColumns('persons');
+		$columnNames = [];
+		foreach ($columns as $column) {
+    		$columnNames[] = $column->getName();
+		}
+		return $this->render('tables/sorted.html.twig', [
+			'columns_name' => $columnNames,
+			'all_persons' => $persons,
+			'form_sort' => $form_sort,
+			'form_filter' => $form_filter
+		]);
 	}
 
 	#[Route('/show_table/persons', name: 'table_persons')]
-	public function table_persons(Request $request): Response
+	public function table_persons(Connection $connection, Request $request): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if($schemaManager->tableExists('addresses')){
 			$sql = "SELECT * FROM addresses";
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result_addresses =  $stmt->fetchAllKeyValue();
 		}
 
@@ -69,30 +92,31 @@ final class TablesController extends AbstractController
 		$form->handleRequest($request);
 		if ($form->isSubmitted() && $form->isValid()) {
 			$person = $form->getData();
-			$message = $this->create_user($person);
+			$message = $this->create_user($connection, $person);
 		}
-
-		$columns_name = $this->get_columns("persons");
+		$columns = $schemaManager->listTableColumns('persons');
+		$columnNames = [];
+		foreach ($columns as $column) {
+    		$columnNames[] = $column->getName();
+		}
 		$sql = "SELECT * FROM persons";
-		$schemaManager = $conn->createSchemaManager();
-		$stmt = $conn->executeQuery($sql);
+		$schemaManager = $connection->createSchemaManager();
+		$stmt = $connection->executeQuery($sql);
 		$result =  $stmt->fetchAllAssociative();
-		var_dump($result_addresses);
 		return $this->render('tables/persons/index.html.twig', [
-			'columns_name' => $columns_name,
+			'columns_name' => $columnNames,
 			'all_persons' => $result,
 			'form' => $form
 		]);
 	}
 
-	public function check_user(array $user): bool
+	public function check_user(Connection $connection, array $user): bool
 	{
 		$userExists = false;
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		$sql = "SELECT * FROM users WHERE username='".$user['username']."' OR email='".$user['email']."';";
 		if($schemaManager->tableExists('users')){
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
 
 			$userExists = $result ? true : false;
@@ -102,14 +126,13 @@ final class TablesController extends AbstractController
 		return $userExists;	
 	}
 
-	public function check_address(array $address): bool
+	public function check_address(Connection $connection, array $address): bool
 	{
 		$addressExists = false;
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		$sql = "SELECT * FROM addresses WHERE address='".$address['address']."';";
 		if($schemaManager->tableExists('addresses')){
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
 
 			$addressExists = $result ? true : false;
@@ -120,7 +143,7 @@ final class TablesController extends AbstractController
 	}
 
 
-	public function create_user(array $user): string
+	public function create_user(Connection $connection, array $user): string
 	{
 		$username = $user['username'];
 		$name = $user['name'];
@@ -128,12 +151,11 @@ final class TablesController extends AbstractController
 		$enable = $user['enable'] == 1 ? '1' : '0';
 		$birthdate = $user['birthdate']->format('Y-m-d');
 
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if(!$schemaManager->tableExists('persons')){
 			return "Table has not been created";
 		}
-		if($this->check_user($user)){
+		if($this->check_user($connection, $user)){
 			return "Person already exists";
 		}
 		$sql = "INSERT INTO persons(username, name, email, enable, birthdate) VALUES ('".$username."','".
@@ -142,57 +164,58 @@ final class TablesController extends AbstractController
 			$enable."','".
 			$birthdate.
 			"');";
-		$conn->executeQuery($sql);
+		$connection->executeQuery($sql);
 		return "Person ".$username. " has been created!";;
 
 	}
 
-	public function create_address(array $address): string
+	public function create_address(Connection $connection, array $address): string
 	{
 		$address_name = $address['address'];
 
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if(!$schemaManager->tableExists('addresses')){
 			return "Table has not been created";
 		}
-		if($this->check_address($address)){
+		if($this->check_address($connection, $address)){
 			return "Address already exists";
 		}
 		$sql = "INSERT INTO addresses(address) VALUES ('".$address_name."');";
-		$conn->executeQuery($sql);
+		$connection->executeQuery($sql);
 		return "Address ".$address_name. " has been created!";;
 
 	}
 
 
-	public function create_table_addresses(): string
+	public function create_table_addresses(Connection $connection): string
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		$sql = "CREATE TABLE addresses(
-			address_id int AUTO_INCREMENT PRIMARY KEY,
+			id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 			address varchar(255) UNIQUE
-);";
+		);";
 		if(!$schemaManager->tableExists('addresses')){
-			$conn->executeQuery($sql);
+			$connection->executeQuery($sql);
 			return "Successfully created table addresses!";
 		}
 		return "Failed creating table addresses";
 
 	}
 
-	#[Route('/show_table/addresses')]
-	public function table_addresses(Request $request): Response
+	#[Route('/show_table/addresses', name: 'table_addresses')]
+	public function table_addresses(Connection $connection, Request $request): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		$message = '';
 		if($schemaManager->tableExists('addresses')){
 			$sql = "SELECT * FROM addresses";
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
-			$columns_name = $this->get_columns("addresses");
+			$columns = $schemaManager->listTableColumns('persons');
+			$columnNames = [];
+			foreach ($columns as $column) {
+    			$columnNames[] = $column->getName();
+			}
 			$form = $this->createFormBuilder()
 		->add('address', TextType::class)
 		->add('save', SubmitType::class, ['label' => 'Create Address'])
@@ -200,13 +223,13 @@ final class TablesController extends AbstractController
 			$form->handleRequest($request);
 			if ($form->isSubmitted() && $form->isValid()) {
 				$address = $form->getData();
-				$message = $this->create_address($address);
+				$message = $this->create_address($connection, $address);
 			}
 		}
 		else
-			return new Response($this->create_table_addresses());
+			return new Response($this->create_table_addresses($connection));
 		return $this->render('show_all/index.html.twig', [
-			'columns_name' => $columns_name,
+			'columns_name' => $columnNames,
 			'result' => $result,
 			'table_name' => 'Addresses',
 			'form' => $form,
@@ -215,42 +238,44 @@ final class TablesController extends AbstractController
 
 	}
 
-	public function create_table_bank_accounts(): string
+	public function create_table_bank_accounts(Connection $connection): string
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if(!$schemaManager->tableExists('persons'))
 			return "Cannot create table bank_accounts if table persons is not created, go to route /home";
 		$sql = "CREATE TABLE bank_accounts(
-			bank_account_id int AUTO_INCREMENT PRIMARY KEY,
+			id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 			person_id int UNIQUE,
 			name varchar(255) UNIQUE,
 			card_id int UNIQUE,
-			FOREIGN KEY (person_id) REFERENCES persons(person_id)
-);";
+			FOREIGN KEY (person_id) REFERENCES persons(id)
+		);";
 		if(!$schemaManager->tableExists('bank_accounts')){
-			$conn->executeQuery($sql);
+			$connection->executeQuery($sql);
 			return "Successfully created table bank_accounts!";
 		}
 		return "Failed creating table bank_accounts";
 
 	}
 
-	#[Route('/show_table/bank_accounts')]
-	public function bank_accounts(): Response
+	#[Route('/show_table/bank_accounts', name: 'table_bank_accounts')]
+	public function bank_accounts(Connection $connection): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if($schemaManager->tableExists('bank_accounts')){
 			$sql = "SELECT * FROM bank_accounts";
-			$stmt = $conn->executeQuery($sql);
+			$stmt = $connection->executeQuery($sql);
 			$result =  $stmt->fetchAllAssociative();
-			$columns_name = $this->get_columns("bank_accounts");
+			$columns = $schemaManager->listTableColumns('bank_accounts');
+			$columnNames = [];
+			foreach ($columns as $column) {
+    			$columnNames[] = $column->getName();
+			}
 		}
 		else
-			return new Response($this->create_table_bank_accounts());
-		return $this->render('show_all/index.html.twig', [
-			'columns_name' => $columns_name,
+			return new Response($this->create_table_bank_accounts($connection));
+		return $this->render('show_all/bank.html.twig', [
+			'columns_name' => $columnNames,
 			'result' => $result,
 			'table_name' => 'Bank Accounts'
 		]);
@@ -259,24 +284,23 @@ final class TablesController extends AbstractController
 
 
 	#[Route('/home', name: 'homepage')]
-	public function homepage(): Response
+	public function homepage(Connection $connection): Response
 	{
-		$conn = $this->db_connection();
-		$schemaManager = $conn->createSchemaManager();
+		$schemaManager = $connection->createSchemaManager();
 		if(!$schemaManager->tableExists('addresses'))
 			return new Response("Cannont create table persons if table addresses is not created, go to route /show_table/addresses");
 		$sql = "CREATE TABLE persons(
-			person_id int AUTO_INCREMENT PRIMARY KEY,
+			id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 			address_id int UNIQUE,
 			username varchar(255) UNIQUE,
 			name varchar(255),
 			email varchar(255) UNIQUE,
 			enable BOOL,
-			birthdate DATETIME,
-			FOREIGN KEY (address_id) REFERENCES addresses(address_id));";
+			birthdate TIMESTAMP,
+			FOREIGN KEY (address_id) REFERENCES addresses(id));";
 		$message = "Table persons already exists";
 		if(!$schemaManager->tableExists('persons')){
-			$conn->executeQuery($sql);
+			$connection->executeQuery($sql);
 			$message = "Table persons created!";
 		}
 
@@ -285,11 +309,9 @@ final class TablesController extends AbstractController
 		]);
 	}
 
-	#[Route('/tables', name: 'app_tables')]
+	#[Route('/ex11', name: 'index')]
 	public function index(): Response
 	{
-		return $this->render('tables/index.html.twig', [
-			'controller_name' => 'TablesController',
-		]);
+		return $this->render('tables/index.html.twig');
 	}
 }

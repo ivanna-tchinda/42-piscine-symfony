@@ -14,9 +14,9 @@ table, th, td, caption {
 
 <div class="example-wrapper">
 
-<a href="/filter_sort">Filter & sort table</a>
+
 <table>
-<caption>All persons</caption>
+<caption>{{table_name}}</caption>
 <thead>
 <tr>
 {% for column in columns_name %}
@@ -25,17 +25,16 @@ table, th, td, caption {
 </tr>
 </thead>
 <tbody>
-{% for person in all_persons %}
-            <tr>
-                {% for column in columns_name %}
-                    <td>{{ attribute(person, column) }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}	
+{% for row in result %}
+ <tr>
+ {% for col in row %}
+  <td>{{col}}</td>
+ {%endfor%}
+ </tr>
+{% endfor %}	
 </tbody>
 </table>
 
-{{form(form)}}
 </div>
 
 {% endblock %}
