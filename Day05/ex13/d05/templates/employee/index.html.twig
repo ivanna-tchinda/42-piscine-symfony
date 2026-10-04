@@ -1,0 +1,148 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Employees
+{% endblock %}
+
+{% block body %}
+
+    <h1>Employees</h1>
+
+    {% for message in app.flashes('success') %}
+        <p>
+            {{ message }}
+        </p>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <p>
+            {{ message }}
+        </p>
+    {% endfor %}
+
+    <a href="{{ path('employee_create') }}">
+        Create employee
+    </a>
+
+    <br><br>
+
+    <table border="1">
+
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Firstname</th>
+                <th>Lastname</th>
+                <th>Email</th>
+                <th>Birthdate</th>
+                <th>Active</th>
+                <th>Employed since</th>
+                <th>Employed until</th>
+                <th>Hours</th>
+                <th>Salary</th>
+                <th>Position</th>
+                <th>Manager</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for employee in employees %}
+
+            <tr>
+
+                <td>
+                    {{ employee.id }}
+                </td>
+
+                <td>
+                    {{ employee.firstname }}
+                </td>
+
+                <td>
+                    {{ employee.lastname }}
+                </td>
+
+                <td>
+                    {{ employee.email }}
+                </td>
+
+                <td>
+                    {{ employee.birthdate|date('Y-m-d') }}
+                </td>
+
+                <td>
+                    {{ employee.active ? 'Yes' : 'No' }}
+                </td>
+
+                <td>
+                    {{ employee.employedSince|date('Y-m-d') }}
+                </td>
+
+                <td>
+                    {% if employee.employedUntil %}
+                        {{ employee.employedUntil|date('Y-m-d') }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ employee.hours.value }}
+                </td>
+
+                <td>
+                    {{ employee.salary }}
+                </td>
+
+                <td>
+                    {{ employee.position.value }}
+                </td>
+
+                <td>
+                    {% if employee.manager %}
+                        {{ employee.manager.firstname }}
+                        {{ employee.manager.lastname }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>
+
+                    <a href="{{ path(
+                        'employee_edit',
+                        {'id': employee.id}
+                    ) }}">
+                        Edit
+                    </a>
+
+                    |
+
+                    <a href="{{ path(
+                        'employee_delete',
+                        {'id': employee.id}
+                    ) }}">
+                        Delete
+                    </a>
+
+                </td>
+
+            </tr>
+
+        {% else %}
+
+            <tr>
+                <td colspan="13">
+                    No employees.
+                </td>
+            </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+{% endblock %}

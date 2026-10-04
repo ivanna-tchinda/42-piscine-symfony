@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block body %}
+
+    <h1>{{ title }}</h1>
+
+    {% for message in app.flashes('error') %}
+        <p>
+            {{ message }}
+        </p>
+    {% endfor %}
+
+    {{ form_start(form) }}
+
+        {{ form_row(form.firstname) }}
+
+        {{ form_row(form.lastname) }}
+
+        {{ form_row(form.email) }}
+
+        {{ form_row(form.birthdate) }}
+
+        {{ form_row(form.active) }}
+
+        {{ form_row(form.employedSince) }}
+
+        {{ form_row(form.employedUntil) }}
+
+        {{ form_row(form.hours) }}
+
+        {{ form_row(form.salary) }}
+
+        {{ form_row(form.position) }}
+
+        {{ form_row(form.manager) }}
+
+        {{ form_row(form.save) }}
+
+    {{ form_end(form) }}
+
+    <a href="{{ path('employee_index') }}">
+        Back to employees
+    </a>
+
+{% endblock %}

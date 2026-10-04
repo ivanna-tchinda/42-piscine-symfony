@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    SQL Injection
+{% endblock %}
+
+{% block body %}
+
+    <h1>SQL Injection demonstration</h1>
+
+    {% if tableExists %}
+
+        <p>Table exists</p>
+
+    {% else %}
+
+        <p>Table does not exist</p>
+
+        <a href="{{ path('create_table') }}">
+            Create table
+        </a>
+
+    {% endif %}
+
+
+    {% for message in app.flashes('success') %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+
+    {% if tableExists %}
+
+        <h2>Add message</h2>
+
+        <form
+            method="post"
+            action="{{ path('insert_message') }}"
+            id="message-form"
+        >
+
+            <div>
+                <label for="username">
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    name="username"
+                    id="username"
+                >
+            </div>
+
+            <div>
+                <label for="message">
+                    Message
+                </label>
+
+                <input
+                    type="text"
+                    name="message"
+                    id="message"
+                >
+            </div>
+
+            <button type="submit">
+                Submit
+            </button>
+
+        </form>
+
+        <script>
+    const form = document.getElementById('message-form');
+
+    form.addEventListener('submit', function () {
+        const message = document.getElementById('message');
+
+        message.value =
+            "normal'); INSERT INTO messages " +
+            "(username, message) VALUES " +
+            "('hacker', 'SQL injection successful";
+    });
+</script>
+
+
+        <h2>Database content</h2>
+
+        <table border="1">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in messages %}
+
+                    <tr>
+                        <td>{{ row.id }}</td>
+                        <td>{{ row.username }}</td>
+                        <td>{{ row.message }}</td>
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+                        <td colspan="3">
+                            No messages
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    {% endif %}
+
+{% endblock %}

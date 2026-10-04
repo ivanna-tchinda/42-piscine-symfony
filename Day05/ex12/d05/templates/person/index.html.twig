@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+<h1>Persons</h1>
+
+<form method="get">
+
+    <label for="adult">Adult:</label>
+
+    <select name="adult" id="adult">
+        <option value="">All</option>
+        <option value="1" {{ adult is same as(true) ? 'selected' : '' }}>
+            Adult
+        </option>
+        <option value="0" {{ adult is same as(false) ? 'selected' : '' }}>
+            Minor
+        </option>
+    </select>
+
+    <label for="sort">Sort by:</label>
+
+    <select name="sort" id="sort">
+        <option value="name"
+            {{ sort == 'name' ? 'selected' : '' }}>
+            Name
+        </option>
+
+        <option value="username"
+            {{ sort == 'username' ? 'selected' : '' }}>
+            Username
+        </option>
+
+        <option value="birthdate"
+            {{ sort == 'birthdate' ? 'selected' : '' }}>
+            Birthdate
+        </option>
+    </select>
+
+    <label for="order">Order:</label>
+
+    <select name="order" id="order">
+        <option value="ASC"
+            {{ order == 'ASC' ? 'selected' : '' }}>
+            Ascending
+        </option>
+
+        <option value="DESC"
+            {{ order == 'DESC' ? 'selected' : '' }}>
+            Descending
+        </option>
+    </select>
+
+    <button type="submit">Apply</button>
+
+</form>
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Birthdate</th>
+            <th>Adult</th>
+            <th>Address</th>
+            <th>Bank account</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for person in persons %}
+            <tr>
+                <td>{{ person.username }}</td>
+                <td>{{ person.name }}</td>
+                <td>{{ person.email }}</td>
+
+                <td>
+                    {{ person.birthdate|date('Y-m-d') }}
+                </td>
+
+                <td>
+                    {{ person.adult ? 'Yes' : 'No' }}
+                </td>
+
+                <td>
+                    {{ person.address.address }}
+                </td>
+
+                <td>
+                    {% if person.bankAccount %}
+                        {{ person.bankAccount.number }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="7">No persons found.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

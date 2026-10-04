@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Add Person
+{% endblock %}
+
+{% block body %}
+
+    <h1>Add Person</h1>
+
+    {{ form_start(form) }}
+
+        {{ form_row(form.username) }}
+
+        {{ form_row(form.name) }}
+
+        {{ form_row(form.email) }}
+
+        {{ form_row(form.enable) }}
+
+        {{ form_row(form.adult) }}
+
+        {{ form_row(form.birthdate) }}
+
+        {{ form_row(form.mobile) }}
+
+        {{ form_row(form.address) }}
+
+        {{ form_row(form.bank_number) }}
+
+        {{ form_row(form.save) }}
+
+    {{ form_end(form) }}
+
+    <br>
+
+    <a href="{{ path('persons') }}">
+        View persons
+    </a>
+
+{% endblock %}
