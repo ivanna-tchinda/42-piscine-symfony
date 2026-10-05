@@ -214,13 +214,8 @@ final class EmployeeController extends AbstractController
 
         if (!$employee) {
 
-            $this->addFlash(
-                'error',
-                'Employee not found.'
-            );
-
-            return $this->redirectToRoute(
-                'employee_index'
+            return new Response(
+                'User not found.'
             );
         }
 
@@ -232,21 +227,15 @@ final class EmployeeController extends AbstractController
             $entityManager->remove($employee);
             $entityManager->flush();
 
-            $this->addFlash(
-                'success',
-                'Employee successfully deleted.'
-            );
-
         } catch (\Throwable $e) {
 
-            $this->addFlash(
+            return new Response(
                 'error',
                 'Employee could not be deleted.'
             );
         }
-
-        return $this->redirectToRoute(
-            'employee_index'
+        return new Response(
+            'Employee successfully deleted.'
         );
     }
 }

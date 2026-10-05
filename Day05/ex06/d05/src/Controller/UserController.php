@@ -136,8 +136,8 @@ class UserController extends AbstractController
 		if(!$schemaManager->tableExists('users')){
 			return "Table has not been created";
 		}
-		if($this->check_user($user, $connection)){
-			return "User already exists";
+		if(!$this->check_user($user, $connection)){
+			return "User doesn't exist";
 		}
 		$sql = "UPDATE users SET username=:username, name=:name, email=:email, enable=:enable, birthdate=:birthdate, address=:address
 		WHERE id=:id;";
@@ -150,7 +150,7 @@ class UserController extends AbstractController
 			'address' => $address,
 			'id' => $id
 		]);
-		return "User ".$username. " has been created!";
+		return "User ".$username. " has been updated!";
 
 	}
 
