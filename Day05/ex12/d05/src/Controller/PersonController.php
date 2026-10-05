@@ -23,9 +23,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class PersonController extends AbstractController
 {
-    /*
-     * Create ORM tables from entities.
-     */
     public function create_orm_tables(Connection $connection): void
     {
         $schemaManager = $connection->createSchemaManager();
@@ -70,10 +67,6 @@ final class PersonController extends AbstractController
         }
     }
 
-
-    /*
-     * Add Person + Address + BankAccount.
-     */
     #[Route('/persons/add', name: 'person_add')]
     public function add(
         Request $request,
@@ -124,9 +117,6 @@ final class PersonController extends AbstractController
             $data = $form->getData();
 
 
-            /*
-             * Address
-             */
             $address = new Address();
 
             $address->setAddress(
@@ -134,9 +124,6 @@ final class PersonController extends AbstractController
             );
 
 
-            /*
-             * Person
-             */
             $person = new Person();
 
             $person->setUsername(
@@ -172,27 +159,17 @@ final class PersonController extends AbstractController
             );
 
 
-            /*
-             * BankAccount
-             */
             $bankAccount = new BankAccount();
 
             $bankAccount->setNumber(
                 $data['bank_number']
             );
 
-            /*
-             * Establish the bidirectional
-             * OneToOne relationship.
-             */
             $person->setBankAccount(
                 $bankAccount
             );
 
 
-            /*
-             * Persist everything through ORM.
-             */
             $entityManager->persist($address);
             $entityManager->persist($person);
             $entityManager->persist($bankAccount);
@@ -214,16 +191,6 @@ final class PersonController extends AbstractController
         );
     }
 
-
-    /*
-     * Display persons using:
-     *
-     * JOIN
-     * CONDITION
-     * SORT
-     *
-     * through ORM only.
-     */
     #[Route('/persons', name: 'persons')]
     public function persons(
         Request $request,
@@ -234,9 +201,6 @@ final class PersonController extends AbstractController
         $this->create_orm_tables($connection);
 
 
-        /*
-         * Request parameters.
-         */
         $adult = $request->query->get('adult');
 
         $sort = $request->query->get(
@@ -251,10 +215,6 @@ final class PersonController extends AbstractController
             )
         );
 
-
-        /*
-         * Validate adult.
-         */
         if ($adult === '1') {
 
             $adult = true;
@@ -269,9 +229,6 @@ final class PersonController extends AbstractController
         }
 
 
-        /*
-         * Validate sorting column.
-         */
         $allowedSorts = [
             'name',
             'username',
@@ -289,9 +246,6 @@ final class PersonController extends AbstractController
         }
 
 
-        /*
-         * Validate sorting direction.
-         */
         $allowedOrders = [
             'ASC',
             'DESC'
@@ -307,10 +261,6 @@ final class PersonController extends AbstractController
             $order = 'ASC';
         }
 
-
-        /*
-         * Special repository query.
-         */
         $persons = $personRepository->findPersons(
             $adult,
             $sort,

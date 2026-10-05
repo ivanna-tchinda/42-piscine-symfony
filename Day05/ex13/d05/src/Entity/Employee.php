@@ -65,11 +65,6 @@ class Employee
     #[Assert\NotNull]
     private ?Position $position = null;
 
-    /*
-     * Several employees can have the same manager.
-     *
-     * Employee N ---- 1 Employee
-     */
     #[ORM\ManyToOne(
         targetEntity: self::class,
         inversedBy: 'employees'
@@ -216,9 +211,6 @@ class Employee
         return $this;
     }
 
-    /**
-     * @return Collection<int, Employee>
-     */
     public function getEmployees(): Collection
     {
         return $this->employees;

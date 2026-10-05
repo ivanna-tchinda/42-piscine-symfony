@@ -17,9 +17,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class EmployeeController extends AbstractController
 {
-    /*
-     * Create ORM table if it does not exist.
-     */
     private function create_orm_table(
         Connection $connection
     ): void {
@@ -60,9 +57,6 @@ final class EmployeeController extends AbstractController
     }
 
 
-    /*
-     * READ
-     */
     #[Route('/employees', name: 'employee_index')]
     public function index(
         EmployeeRepository $repository,
@@ -81,9 +75,6 @@ final class EmployeeController extends AbstractController
     }
 
 
-    /*
-     * CREATE
-     */
     #[Route('/employees/create', name: 'employee_create')]
     public function create(
         Request $request,
@@ -137,9 +128,6 @@ final class EmployeeController extends AbstractController
     }
 
 
-    /*
-     * EDIT
-     */
     #[Route(
         '/employees/{id}/edit',
         name: 'employee_edit',
@@ -209,10 +197,6 @@ final class EmployeeController extends AbstractController
         );
     }
 
-
-    /*
-     * DELETE
-     */
     #[Route(
         '/employees/{id}/delete',
         name: 'employee_delete',
@@ -241,10 +225,6 @@ final class EmployeeController extends AbstractController
         }
 
         try {
-            /*
-             * Employees managed by this employee
-             * would otherwise reference the deleted row.
-             */
             foreach ($employee->getEmployees() as $managedEmployee) {
                 $managedEmployee->setManager(null);
             }

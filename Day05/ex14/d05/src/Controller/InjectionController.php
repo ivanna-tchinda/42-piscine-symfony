@@ -73,13 +73,6 @@ class InjectionController extends AbstractController
         $username = $request->request->get('username');
         $message = $request->request->get('message');
 
-        /*
-         * INTENTIONALLY VULNERABLE.
-         *
-         * This is normally something you must NEVER do.
-         * It exists here only because the exercise explicitly
-         * requires demonstrating SQL injection.
-         */
         $sql = "
             INSERT INTO messages (username, message)
             VALUES ('$username', '$message')
